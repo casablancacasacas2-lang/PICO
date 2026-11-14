@@ -218,7 +218,7 @@ function tombstone(passportNo) {
 }
 
 // ===== Auto-expiry: applicants are deleted RETENTION_DAYS after creation =====
-const RETENTION_DAYS = 20;
+const RETENTION_DAYS = 15;
 const RETENTION_MS = RETENTION_DAYS * 24 * 60 * 60 * 1000;
 
 // Deletes every applicant whose creation date (_createdAt) is >= 20 days old.
@@ -243,7 +243,7 @@ async function purgeExpiredApplicants() {
 }
 
 // One-time rollout: gives every record a _createdAt. On the very FIRST run,
-// records that are already older than 20 days get a fresh 20-day window
+// records that are already older than 15 days get a fresh 15-day window
 // instead of being wiped the moment this feature is deployed.
 async function retentionMigration() {
   const now = Date.now();
@@ -1201,7 +1201,7 @@ app.get('/api/export/full', (req, res) => {
 // Configure via environment variables (Render → Environment):
 //   CALLMEBOT_PHONE   — your WhatsApp number, international format, no "+" (e.g. 2126xxxxxxxx)
 //   CALLMEBOT_APIKEY  — the apikey CallMeBot gave you
-//   PUBLIC_BASE_URL   — this server's public URL (e.g. https://manage-2027.onrender.com)
+//   PUBLIC_BASE_URL   — this server's public URL (e.g. https://pico-oggp.onrender.com)
 // If any of these are missing, the hourly check still runs but just logs
 // and skips sending, instead of crashing.
 //
