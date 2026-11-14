@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: bls-applicant-sync-api
+    runtime: node
+    plan: free
+    region: frankfurt          # قريب للمغرب، بدلها إيلا بغيتي (oregon, singapore...)
+    buildCommand: npm install
+    startCommand: node server.js
+    healthCheckPath: /api/health
+    envVars:
+      - key: PUBLIC_BASE_URL
+        sync: false           # عمرها بيدك بعد ما يعطيك Render الرابط ديال السيرفر
+      - key: CALLMEBOT_PHONE
+        sync: false
+      - key: CALLMEBOT_APIKEY
+        sync: false
+      - key: MONGODB_URI
+        sync: false           # واجب! بلا هادي البيانات كتمسح مع كل restart/نعاس ديال Render (free plan)
+      - key: MONGODB_DB
+        sync: false           # اختياري، افتراضيا "bls_manager"

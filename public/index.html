@@ -1,0 +1,3177 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Manifest — BLS Applicant Control</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<style>
+  :root{
+    --paper:#F6F5FC;
+    --paper-deep:#ECEAF9;
+    --line:#E2DFF5;
+    --ink:#1E1B2E;
+    --ink-soft:#5B5773;
+    --ink-faint:#9C97B8;
+    --navy:#6D28D9;
+    --navy-deep:#4C1D95;
+    --seal:#F43F5E;
+    --seal-dark:#E11D48;
+    --seal-tint:#FFE4E9;
+    --brass:#F59E0B;
+    --brass-light:#FBBF24;
+    --white:#FFFFFF;
+    --plum:#C026D3;
+    --plum-tint:#FBE7FB;
+    --teal:#0D9488;
+    --teal-tint:#CCFBF1;
+    --spain:#F43F5E;
+    --spain-tint:#FFE4E9;
+    --portugal:#10B981;
+    --portugal-tint:#D1FAE5;
+    --sky:#0EA5E9;
+    --sky-tint:#E0F2FE;
+    --rose:#EC4899;
+    --rose-tint:#FCE7F3;
+    --radius:14px;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{
+    font-family:'IBM Plex Sans', sans-serif;
+    background:var(--paper);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+  }
+  body::before{
+    content:'';
+    position:fixed; inset:0; pointer-events:none; z-index:0;
+    background-image:
+      radial-gradient(circle at 1px 1px, rgba(109,40,217,0.05) 1px, transparent 0);
+    background-size:22px 22px;
+  }
+  .wrap{max-width:1280px;margin:0 auto;padding:0 28px 80px;position:relative;z-index:1;}
+  a{color:inherit;}
+
+  /* ===== Header ===== */
+  header.topbar{
+    background:linear-gradient(120deg,#6D28D9 0%, #9333EA 45%, #DB2777 100%);
+    color:var(--white);
+    padding:22px 0;
+    margin-bottom:0;
+    border-bottom:none;
+  }
+  .topbar-inner{
+    max-width:1280px;margin:0 auto;padding:0 28px;
+    display:flex;align-items:center;justify-content:space-between;gap:20px;
+  }
+  .brand{display:flex;align-items:center;gap:16px;}
+  .seal-mark{
+    width:46px;height:46px;border-radius:14px;
+    background:rgba(255,255,255,0.16);
+    border:1px solid rgba(255,255,255,0.35);
+    display:flex;align-items:center;justify-content:center;
+    position:relative;flex-shrink:0;
+    backdrop-filter:blur(2px);
+  }
+  .seal-mark::before{
+    content:none;
+  }
+  .seal-mark span{
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:16px;
+    color:var(--white);letter-spacing:0.5px;
+  }
+  .brand-text h1{
+    font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:24px;letter-spacing:0.3px;
+  }
+  .brand-text small{
+    display:block;color:rgba(255,255,255,0.55);font-size:11.5px;
+    letter-spacing:1.6px;text-transform:uppercase;margin-top:3px;font-weight:500;
+  }
+  .topbar-right{display:flex;align-items:center;gap:14px;}
+  .live-chip{
+    display:flex;align-items:center;gap:8px;
+    font-size:11.5px;letter-spacing:1.2px;text-transform:uppercase;font-weight:600;
+    color:#8fd19e;border:1px solid rgba(143,209,158,0.35);
+    padding:7px 14px;border-radius:20px;background:rgba(143,209,158,0.08);
+  }
+  .live-dot{width:7px;height:7px;border-radius:50%;background:#4CAF63;animation:pulse 1.8s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;transform:scale(1);}50%{opacity:0.55;transform:scale(1.25);}}
+  .update-chip{
+    display:flex;align-items:center;gap:6px;
+    font-size:11.5px;font-weight:600;
+    color:rgba(255,255,255,0.9);border:1px solid rgba(255,255,255,0.25);
+    padding:7px 14px;border-radius:20px;background:rgba(255,255,255,0.08);
+  }
+  .announce-bar{
+    display:flex;align-items:center;gap:12px;
+    background:#151129;
+    padding:10px 20px;
+    box-shadow:0 2px 10px rgba(0,0,0,0.3);
+  }
+  .announce-icon{font-size:18px;flex-shrink:0;}
+  .announce-track{flex:1;overflow:hidden;white-space:nowrap;min-width:0;position:relative;height:28px;}
+  .announce-text{
+    position:absolute;top:50%;left:100%;
+    white-space:nowrap;
+    font-family:'Space Grotesk',sans-serif;
+    font-size:22px;font-weight:800;letter-spacing:0.4px;
+    color:var(--announce-color, #E8FF25);
+    text-shadow:0 0 14px var(--announce-glow, rgba(232,255,37,0.65));
+    animation:announce-marquee 16s linear infinite;
+  }
+  .announce-bar:hover .announce-text{animation-play-state:paused;}
+  @keyframes announce-marquee{
+    0%{left:100%;transform:translateY(-50%);}
+    100%{left:-100%;transform:translateY(-50%);}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .announce-text{position:static;top:auto;left:auto;transform:none;animation:none;}
+  }
+  .announce-edit{
+    flex-shrink:0;background:rgba(255,255,255,0.1);border:none;border-radius:50%;
+    width:28px;height:28px;cursor:pointer;font-size:12px;color:#fff;
+    opacity:0.75;
+  }
+  .announce-edit:hover{opacity:1;background:rgba(255,255,255,0.2);}
+  .btn{
+    font-family:'IBM Plex Sans',sans-serif;
+    border:1px solid transparent;cursor:pointer;
+    padding:11px 20px;font-size:13.5px;font-weight:600;
+    letter-spacing:0.3px;border-radius:var(--radius);
+    display:inline-flex;align-items:center;gap:8px;
+    transition:transform .15s ease, box-shadow .15s ease, background .15s ease;
+  }
+  .btn:active{transform:translateY(1px);}
+  .btn-seal{background:var(--seal);color:var(--white);}
+  .btn-seal:hover{background:var(--seal-dark);}
+  .btn-ghost{background:transparent;color:var(--white);border-color:rgba(255,255,255,0.3);}
+  .btn-ghost:hover{background:rgba(255,255,255,0.08);}
+  .btn-navy{background:var(--navy);color:var(--white);}
+  .btn-navy:hover{background:var(--navy-deep);}
+  .btn-outline{background:var(--white);color:var(--ink);border-color:var(--line);}
+  .btn-outline:hover{border-color:var(--ink-soft);}
+  .btn-danger{background:var(--white);color:var(--seal);border-color:#E3BFBB;}
+  .btn-danger:hover{background:var(--seal-tint);}
+  .btn:disabled{opacity:0.5;cursor:not-allowed;}
+  .btn.holdable{position:relative;overflow:hidden;user-select:none;-webkit-user-select:none;}
+  .btn.holdable .hold-fill{
+    position:absolute;left:0;top:0;bottom:0;width:0%;
+    background:var(--seal-tint);z-index:0;pointer-events:none;
+    transition:width linear;
+  }
+  .btn.holdable .btn-label{position:relative;z-index:1;}
+  .btn.holdable.holding,.name-cell.holdable.holding{
+    color:var(--seal-dark);border-color:var(--seal);
+    animation:armed-pulse 0.9s ease-in-out infinite;
+  }
+  .btn.holdable.holding .hold-fill{background:var(--seal-tint);}
+  @keyframes armed-pulse{
+    0%,100%{box-shadow:0 0 0 0 rgba(163,29,29,0.35);}
+    50%{box-shadow:0 0 0 6px rgba(163,29,29,0);}
+  }
+
+  /* ===== Stat cards ===== */
+  .tickets{
+    display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+    gap:16px;margin-top:28px;
+  }
+  .ticket{
+    padding:22px 26px;position:relative;
+    background:var(--white);border-radius:16px;
+    border:1px solid var(--line);
+    box-shadow:0 4px 16px rgba(76,29,149,0.06);
+    border-top:4px solid var(--navy);
+  }
+  .ticket.accent-violet{border-top-color:var(--navy);}
+  .ticket.accent-amber{border-top-color:var(--brass);}
+  .ticket.accent-teal{border-top-color:var(--teal);}
+  .ticket-label{
+    font-size:10.5px;letter-spacing:1.6px;text-transform:uppercase;
+    color:var(--ink-faint);font-weight:600;margin-bottom:10px;
+  }
+  .ticket-value{
+    font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:38px;color:var(--ink);line-height:1;
+  }
+  .ticket-value sup{font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--brass);font-weight:600;margin-left:6px;}
+
+  /* ===== Toolbar ===== */
+  .toolbar{
+    display:flex;gap:10px;flex-wrap:wrap;align-items:center;
+    margin-top:26px;
+  }
+  .search-box{
+    flex:1;min-width:240px;position:relative;
+  }
+  .search-box input{
+    width:100%;padding:12px 16px 12px 38px;
+    border:1px solid var(--line);background:var(--white);
+    font-family:'IBM Plex Sans',sans-serif;font-size:14px;color:var(--ink);
+    border-radius:var(--radius);
+  }
+  .search-box input:focus{outline:none;border-color:var(--navy);}
+  .search-box::before{
+    content:'⌕';position:absolute;left:14px;top:50%;transform:translateY(-50%);
+    color:var(--ink-faint);font-size:16px;pointer-events:none;
+  }
+
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;}
+  .chip{
+    padding:8px 16px;border:1px solid var(--line);background:var(--white);
+    font-size:12.5px;font-weight:600;letter-spacing:0.3px;color:var(--ink-soft);
+    border-radius:20px;cursor:pointer;display:inline-flex;align-items:center;gap:8px;
+    transition:all .15s ease;
+  }
+  .chip:hover{border-color:var(--navy);color:var(--navy);}
+  .chip.active{background:var(--navy);border-color:var(--navy);color:var(--white);}
+  .chip{position:relative;overflow:hidden;}
+  .chip .chip-label{position:relative;z-index:1;}
+  .chip .hold-fill{
+    position:absolute;left:0;top:0;bottom:0;width:0%;
+    background:var(--seal-tint);z-index:0;pointer-events:none;
+    transition:width linear;
+  }
+  .chip.holding{border-color:var(--seal);color:var(--seal-dark);}
+  .chip .chip-edit{
+    position:relative;z-index:1;font-size:12px;opacity:0.55;padding:2px 3px;
+    border-radius:50%;line-height:1;
+  }
+  .chip .chip-edit:hover{opacity:1;background:rgba(0,0,0,0.08);}
+  .chip.active .chip-edit:hover{background:rgba(255,255,255,0.2);}
+
+
+  /* ===== Manifest table ===== */
+  .manifest{
+    margin-top:26px;border:1px solid var(--line);background:var(--white);
+    border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(76,29,149,0.06);
+  }
+  .manifest-head{
+    display:flex;align-items:baseline;justify-content:space-between;
+    padding:20px 26px;border-bottom:1px solid var(--line);
+  }
+  .manifest-head h2{
+    font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:19px;
+  }
+  .manifest-head span{font-size:12px;color:var(--ink-faint);font-family:'IBM Plex Mono',monospace;}
+  table{width:100%;border-collapse:collapse;}
+  thead th{
+    text-align:left;padding:12px 20px;font-size:10.5px;letter-spacing:1.2px;
+    text-transform:uppercase;color:var(--ink-faint);font-weight:600;
+    border-bottom:1px solid var(--line);background:var(--paper-deep);
+  }
+  tbody td{
+    padding:16px 20px;border-bottom:1px solid var(--line);font-size:13.5px;vertical-align:middle;
+  }
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:#FAF9FE;}
+  .row-no{font-family:'IBM Plex Mono',monospace;color:var(--ink-faint);font-size:12px;}
+  .photo-thumb{
+    width:42px;height:52px;object-fit:cover;border:1px solid var(--line);
+  }
+  .no-photo{
+    width:42px;height:52px;background:var(--paper-deep);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;color:var(--ink-faint);font-size:18px;
+  }
+  .name-cell strong{font-weight:600;color:var(--ink);display:block;}
+  .name-cell small{color:var(--ink-faint);font-size:11.5px;}
+  .name-cell.holdable{position:relative;cursor:pointer;user-select:none;-webkit-user-select:none;overflow:hidden;}
+  .name-cell.holdable .hold-fill{
+    position:absolute;left:0;top:0;bottom:0;width:0%;
+    background:var(--seal-tint);z-index:0;pointer-events:none;
+    transition:width linear;
+  }
+  .name-cell.holdable strong,.name-cell.holdable small{position:relative;z-index:1;}
+  .name-cell.holdable.holding strong{color:var(--seal-dark);}
+  .mono{font-family:'IBM Plex Mono',monospace;font-size:13px;letter-spacing:0.3px;}
+  .group-tag{
+    font-size:11px;font-weight:600;padding:4px 10px;border:1px solid var(--brass-light);
+    color:#B45309;border-radius:20px;background:#FEF3C7;white-space:nowrap;
+  }
+  .tag-family-type{
+    font-size:11px;font-weight:600;padding:4px 10px;border:1px solid var(--plum);
+    color:var(--plum);border-radius:20px;background:var(--plum-tint);white-space:nowrap;
+  }
+  .tag-family-name{
+    font-size:11px;font-weight:600;padding:4px 10px;border:1px solid var(--teal);
+    color:var(--teal);border-radius:20px;background:var(--teal-tint);white-space:nowrap;
+  }
+  .tag-destination-spain{
+    font-size:11px;font-weight:600;padding:4px 10px;border:1px solid var(--spain);
+    color:var(--spain);border-radius:20px;background:var(--spain-tint);white-space:nowrap;
+  }
+  .tag-destination-portugal{
+    font-size:11px;font-weight:600;padding:4px 10px;border:1px solid var(--portugal);
+    color:var(--portugal);border-radius:20px;background:var(--portugal-tint);white-space:nowrap;
+  }
+  .tag-gender-male{
+    font-size:11px;font-weight:600;padding:4px 10px;border:1px solid var(--sky);
+    color:var(--sky);border-radius:20px;background:var(--sky-tint);white-space:nowrap;
+  }
+  .tag-gender-female{
+    font-size:11px;font-weight:600;padding:4px 10px;border:1px solid var(--rose);
+    color:var(--rose);border-radius:20px;background:var(--rose-tint);white-space:nowrap;
+  }
+  .tree-arrow{display:inline-block;width:16px;color:var(--brass-light);}
+  .destination-header-row{cursor:pointer;}
+  .destination-header-row td{
+    background:var(--navy);color:var(--white);font-family:'Space Grotesk',sans-serif;font-weight:700;
+    font-size:13.5px;letter-spacing:0.6px;text-transform:uppercase;padding:11px 16px;
+    border-top:3px solid var(--brass-light);
+  }
+  .destination-header-row:hover td{background:#5B21B6;}
+  .section-header-row td{
+    background:var(--brass);color:var(--white);font-family:'Space Grotesk',sans-serif;font-weight:700;
+    font-size:12.5px;letter-spacing:0.6px;text-transform:uppercase;padding:9px 16px;
+    border-top:2px solid var(--brass-light);
+  }
+  .city-header-row{cursor:pointer;}
+  .city-header-row td{
+    background:#9333EA;color:rgba(255,255,255,0.95);font-family:'Space Grotesk',sans-serif;font-weight:600;
+    font-size:12px;letter-spacing:0.4px;padding:8px 16px 8px 32px;border-top:1px solid rgba(255,255,255,0.15);
+  }
+  .city-header-row:hover td{background:#A855F7;}
+  .group-header-row{cursor:pointer;}
+  .group-header-row td{
+    background:#DB2777;color:var(--white);font-family:'Space Grotesk',sans-serif;font-weight:600;
+    font-size:12px;letter-spacing:0.4px;padding:8px 16px 8px 48px;border-top:1px solid rgba(255,255,255,0.12);
+  }
+  .group-header-row:hover td{background:#EC4899;}
+  .group-header-row .family-edit{
+    margin-left:8px;opacity:0.6;cursor:pointer;padding:2px 4px;border-radius:50%;
+  }
+  .group-header-row .family-edit:hover{opacity:1;background:rgba(255,255,255,0.15);}
+  .group-header-arrow{display:inline-block;width:16px;color:var(--brass-light);}
+  .dash{color:var(--ink-faint);}
+  .expiry-badge{
+    display:inline-block;font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:10px;
+    margin-left:6px;white-space:nowrap;vertical-align:middle;
+  }
+  .expiry-badge.expired{background:#FBE4E4;color:#B3261E;border:1px solid #E8B4B0;}
+  .expiry-badge.soon{background:#FDEEDC;color:#9A5B0A;border:1px solid #F0CDA0;}
+  .row-actions{display:flex;gap:6px;}
+  .icon-btn{
+    padding:7px 12px;background:var(--white);border:1px solid var(--line);
+    border-radius:var(--radius);cursor:pointer;font-size:12.5px;font-weight:600;color:var(--ink-soft);
+    transition:all .15s ease;
+  }
+  .icon-btn:hover{border-color:var(--navy);color:var(--navy);}
+  .icon-btn.del:hover{border-color:var(--seal);color:var(--seal);}
+
+  .empty-state{text-align:center;padding:90px 20px;color:var(--ink-faint);}
+  .empty-state .mark{font-family:'Space Grotesk',sans-serif;font-size:44px;color:var(--line);margin-bottom:14px;}
+  .empty-state p{font-size:14px;}
+
+  /* ===== Modal — passport data page ===== */
+  .modal{
+    display:none;position:fixed;inset:0;background:rgba(16,21,42,0.6);
+    z-index:1000;align-items:center;justify-content:center;padding:24px;
+  }
+  .modal.active{display:flex;}
+  .page{
+    background:var(--white);width:100%;max-width:760px;max-height:92vh;overflow-y:auto;
+    border:1px solid var(--line);position:relative;
+  }
+  .page-header{
+    background:var(--navy);color:var(--white);padding:22px 28px;
+    display:flex;justify-content:space-between;align-items:center;
+    border-bottom:3px solid var(--brass);cursor:grab;user-select:none;
+  }
+  .page-header.dragging{cursor:grabbing;}
+  .page-header h2{font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:20px;}
+  .page-header small{display:block;color:rgba(255,255,255,0.5);font-size:11px;letter-spacing:1px;text-transform:uppercase;margin-top:4px;}
+  .close-btn{
+    background:transparent;border:1px solid rgba(255,255,255,0.3);color:var(--white);
+    width:34px;height:34px;font-size:18px;cursor:pointer;border-radius:var(--radius);
+  }
+  .close-btn:hover{background:rgba(255,255,255,0.1);}
+  .page-body{padding:28px;display:grid;grid-template-columns:160px 1fr;gap:28px;}
+  .photo-panel{display:flex;flex-direction:column;gap:12px;}
+  .photo-slot{
+    width:160px;height:200px;border:1px solid var(--line);background:var(--paper-deep);
+    display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative;
+  }
+  .photo-slot img{width:100%;height:100%;object-fit:cover;}
+  .photo-slot .ph{color:var(--ink-faint);font-size:34px;}
+  .photo-panel input[type=file]{font-size:11.5px;}
+  .upload-status{font-size:11.5px;color:var(--ink-soft);min-height:16px;}
+  .fields{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+  .fields .full{grid-column:1 / -1;}
+  .fg label{
+    display:block;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;
+    color:var(--ink-faint);font-weight:600;margin-bottom:7px;
+  }
+  .fg input, .fg select{
+    width:100%;padding:10px 12px;border:1px solid var(--line);
+    font-family:'IBM Plex Sans',sans-serif;font-size:13.5px;background:var(--paper);
+    border-radius:var(--radius);
+  }
+  .fg input:focus, .fg select:focus{outline:none;border-color:var(--navy);background:var(--white);}
+  .fg input[readonly]{background:var(--paper-deep);color:var(--ink-soft);cursor:not-allowed;border-style:dashed;}
+  .lock-note{font-size:11px;color:var(--ink-faint);margin-top:6px;}
+  .field-hint{font-size:11px;margin-top:6px;}
+  .field-hint.info{color:var(--ink-faint);}
+  .field-hint.warn{color:#B3261E;font-weight:600;}
+
+  .mrz{
+    margin:0 28px 24px;padding:16px 18px;background:var(--navy-deep);
+    font-family:'IBM Plex Mono',monospace;color:#8fd19e;font-size:12.5px;
+    letter-spacing:2px;line-height:1.9;white-space:pre;overflow-x:auto;
+  }
+  .mrz-label{
+    padding:0 28px;font-size:10px;letter-spacing:1.4px;text-transform:uppercase;
+    color:var(--ink-faint);margin-bottom:8px;font-weight:600;
+  }
+  .page-footer{
+    padding:18px 28px;border-top:1px solid var(--line);
+    display:flex;justify-content:flex-end;gap:10px;background:var(--paper-deep);
+  }
+
+  /* ===== Stamp toast ===== */
+  .stamp{
+    position:fixed;bottom:34px;right:34px;z-index:2000;
+    border:3px solid var(--seal);color:var(--seal);
+    padding:12px 22px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:15px;
+    letter-spacing:1.5px;text-transform:uppercase;background:rgba(255,255,255,0.96);
+    transform:rotate(-4deg) scale(1.5);opacity:0;
+    animation:stampIn .35s cubic-bezier(.2,1.4,.4,1) forwards, stampOut .3s ease 2.4s forwards;
+  }
+  .stamp.error{border-color:var(--ink-soft);color:var(--ink-soft);}
+  .stamp.with-undo{
+    animation:stampIn .35s cubic-bezier(.2,1.4,.4,1) forwards, stampOut .3s ease 5.4s forwards;
+    display:flex;align-items:center;gap:14px;
+  }
+  .stamp-undo{
+    background:transparent;border:2px solid currentColor;color:inherit;
+    font-family:inherit;font-weight:700;font-size:11px;letter-spacing:1px;
+    text-transform:uppercase;padding:4px 10px;cursor:pointer;border-radius:2px;
+  }
+  .stamp-undo:hover{background:rgba(0,0,0,0.08);}
+  @keyframes stampIn{to{transform:rotate(-4deg) scale(1);opacity:1;}}
+  @keyframes stampOut{to{opacity:0;transform:rotate(-4deg) scale(0.96) translateY(6px);}}
+
+  /* ===== Licenses panel ===== */
+  .licenses-page{max-width:960px;}
+  .licenses-body{display:block !important;padding:22px 28px;}
+  .licenses-toolbar{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+  .licenses-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+  .licenses-table th{
+    text-align:left;font-size:10.5px;letter-spacing:1px;text-transform:uppercase;
+    color:var(--ink-faint);font-weight:600;padding:8px 10px;border-bottom:1px solid var(--line);
+  }
+  .licenses-table td{padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:middle;}
+  .licenses-table tr:last-child td{border-bottom:none;}
+  .lic-label-input{
+    width:100%;border:1px solid transparent;background:transparent;font-size:12.5px;
+    font-family:inherit;padding:4px 6px;border-radius:6px;color:var(--ink);
+  }
+  .lic-label-input:hover, .lic-label-input:focus{border-color:var(--line);background:var(--paper);outline:none;}
+  .lic-device-id{
+    font-family:'IBM Plex Mono',monospace;font-size:10.5px;color:var(--ink-soft);
+    background:var(--paper-deep);padding:3px 6px;border-radius:6px;cursor:pointer;white-space:nowrap;
+  }
+  .lic-badge{
+    display:inline-block;padding:3px 9px;border-radius:20px;font-size:10.5px;font-weight:700;
+    letter-spacing:0.4px;text-transform:uppercase;
+  }
+  .lic-badge.active{background:var(--portugal-tint);color:#0a7a56;}
+  .lic-badge.inactive{background:var(--paper-deep);color:var(--ink-faint);}
+  .lic-badge.expired{background:var(--seal-tint);color:var(--seal-dark);}
+  .lic-badge.flagged{background:#fdecea;color:#c0392b;}
+  tr.lic-row-flagged{background:#fff8f7;}
+  tr.lic-row-flagged .lic-device-id{background:#fdecea;color:#c0392b;}
+  .lic-flag-note{display:block;margin-top:2px;font-size:10px;color:#c0392b;}
+  .lic-session-note{display:block;margin-top:2px;font-size:10px;color:var(--ink-faint);}
+  .lic-btn.unflag{border-color:#c0392b;color:#c0392b;}
+  .lic-flag-dot{
+    display:none;margin-left:6px;min-width:16px;height:16px;padding:0 4px;border-radius:9px;
+    background:#c0392b;color:#fff;font-size:10px;font-weight:700;line-height:16px;text-align:center;
+  }
+  .lic-expiry-input{
+    border:1px solid var(--line);border-radius:6px;padding:4px 6px;font-size:11.5px;
+    font-family:inherit;background:var(--paper);
+  }
+  .lic-row-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+  .lic-btn{
+    border:1px solid var(--line);background:var(--white);border-radius:6px;cursor:pointer;
+    font-size:11px;font-weight:600;padding:5px 9px;font-family:inherit;
+  }
+  .lic-btn:hover{background:var(--paper-deep);}
+  .lic-btn.toggle-on{border-color:var(--seal-dark);color:var(--seal-dark);}
+  .lic-btn.toggle-off{border-color:#0a7a56;color:#0a7a56;}
+  .lic-btn.danger{color:var(--seal-dark);}
+  .lic-empty{padding:40px 0;text-align:center;color:var(--ink-faint);}
+
+  @media (max-width: 720px){
+    .page-body{grid-template-columns:1fr;}
+    .photo-panel{flex-direction:row;align-items:flex-start;}
+    .fields{grid-template-columns:1fr;}
+    .topbar-inner{flex-direction:column;align-items:flex-start;gap:14px;}
+  }
+
+  :focus-visible{outline:2px solid var(--brass);outline-offset:2px;}
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:0.001ms !important;}
+  }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="seal-mark"><span>AM</span></div>
+      <div class="brand-text">
+        <h1>Manifest</h1>
+        <small>BLS Applicant Control · Spain · Morocco · Portugal</small>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <span class="live-chip"><span class="live-dot"></span> Syncing live</span>
+      <span class="update-chip" id="last-update-chip" title="Last applicant added or edited">
+        🕐 <span id="last-update-text">—</span>
+      </span>
+      <span id="client-license-chip" style="display:none;align-items:center;gap:6px;font-size:12.5px;font-weight:600;padding:6px 12px;border-radius:999px;background:var(--paper-deep);border:1px solid var(--line);color:var(--ink);">
+        <span id="client-license-chip-icon">⏳</span>
+        <span id="client-license-chip-text">جارٍ التحقق...</span>
+      </span>
+      <button class="btn btn-ghost" onclick="openMasterPasswordMenu()" title="Master override password — unlocks every group and Import">🗝️ Master password</button>
+      <button class="btn btn-ghost" onclick="syncNow()">↻ Sync now</button>
+    </div>
+  </div>
+</header>
+
+<div class="announce-bar" id="announce-bar" style="display:none;">
+  <span class="announce-icon">📢</span>
+  <div class="announce-track"><span class="announce-text" id="announce-text"></span></div>
+  <button class="announce-edit" id="announce-edit-btn" onclick="editAnnouncement()" title="Edit announcement">✎</button>
+</div>
+
+<div class="wrap">
+
+  <div id="activity-log-card" style="margin:0 0 18px;padding:14px 20px;background:var(--white);border:1px solid var(--line);border-radius:var(--radius);">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;cursor:pointer;" onclick="toggleActivityLog()">
+      <strong>🕓 سجل النشاط — آخر التعديلات لكل جهاز</strong>
+      <span style="display:flex;align-items:center;gap:10px;">
+        <button class="btn btn-ghost" onclick="event.stopPropagation();refreshActivityLog()" title="Refresh">↻</button>
+        <span id="activity-log-arrow" style="transition:transform .2s;">▾</span>
+      </span>
+    </div>
+    <div id="activity-log-list" style="max-height:220px;overflow-y:auto;font-size:12.5px;"></div>
+  </div>
+
+  <div class="tickets">
+    <div class="ticket accent-violet">
+      <div class="ticket-label">Total applicants</div>
+      <div class="ticket-value" id="total-applicants">0</div>
+    </div>
+    <div class="ticket accent-amber">
+      <div class="ticket-label">Groups on file</div>
+      <div class="ticket-value" id="total-groups">0</div>
+    </div>
+    <div class="ticket accent-teal">
+      <div class="ticket-label">With photo</div>
+      <div class="ticket-value" id="with-photos">0<sup id="photo-pct"></sup></div>
+    </div>
+  </div>
+
+  <div class="toolbar">
+    <div class="search-box">
+      <input type="text" id="search" placeholder="Search by name, passport number, group, or family" oninput="filterApplicants()">
+    </div>
+    <button class="btn btn-seal" onclick="showAddModal()">+ Add applicant</button>
+    <button class="btn btn-outline" onclick="showAddGroupModal()">+ New group</button>
+    <button class="btn btn-outline" onclick="editAnnouncement()">📢 Announcement</button>
+    <button class="btn btn-outline" id="import-json-btn" onclick="importData()">Import JSON</button>
+    <button class="btn btn-outline" onclick="openAdminPasswordMenu()" title="Set/change/reset the admin password (protects Import and Licenses)">🔑</button>
+    <button class="btn btn-outline" onclick="exportData()">Export JSON</button>
+    <button id="delete-selected-btn" class="btn btn-danger holdable" style="display:none;"
+      onmousedown="holdSelectedStart(event)" onmouseup="holdEnd()" onmouseleave="holdEnd()"
+      ontouchstart="holdSelectedStart(event)" ontouchend="holdEnd()" ontouchcancel="holdEnd()"
+      title="Hold, then press Enter">
+      <div class="hold-fill"></div>
+      <span class="btn-label" id="delete-selected-label">Delete selected (0)</span>
+    </button>
+  </div>
+
+  <div class="chips" id="groups-filter"></div>
+
+  <div class="manifest">
+    <div class="manifest-head">
+      <h2>Applicant manifest</h2>
+      <span id="manifest-meta">—</span>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th><input type="checkbox" id="select-all-cb" onclick="toggleSelectAll()" title="Select all visible"></th>
+          <th>No.</th><th>Photo</th><th>Name</th><th>Passport</th>
+          <th>Date of birth</th><th>Place of birth</th><th>Group</th><th>Added</th><th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr><td colspan="10"><div class="empty-state"><div class="mark">M</div><p>Loading manifest…</p></div></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<div id="modal" class="modal">
+  <div class="page">
+    <div class="page-header">
+      <div>
+        <h2 id="modal-title">Add applicant</h2>
+        <small>Passport data page</small>
+      </div>
+      <button class="close-btn" onclick="closeModal()">×</button>
+    </div>
+    <div class="page-body">
+      <div class="photo-panel">
+        <div class="photo-slot" id="photo-slot"><span class="ph">＋</span></div>
+        <input type="file" id="fph" accept="image/*">
+        <div id="upload-status" class="upload-status"></div>
+        <div class="fg"><label id="group-field-label">Group</label>
+          <input type="text" id="fg" list="fg-list" autocomplete="off" placeholder="Optional" oninput="toUppercaseField('fg')" onkeypress="handleEnter(event,'ff')">
+          <datalist id="fg-list"></datalist>
+        </div>
+      </div>
+      <div class="fields">
+        <div class="fg"><label>Application type</label>
+          <select id="fat" onkeypress="handleEnter(event,'fdest')" onchange="onAppTypeChange()">
+            <option value="Individual">Individual</option>
+            <option value="Family">Family</option>
+          </select>
+        </div>
+        <div class="fg" id="fg-familyname-inline" style="display:none;"><label>Family name</label>
+          <input type="text" id="fg2" list="fname-list" autocomplete="off" placeholder="e.g. Bouchaib Family" oninput="toUppercaseField('fg2');updateModalTitle()" onkeypress="handleEnter(event,'fdest')">
+          <datalist id="fname-list"></datalist>
+        </div>
+        <div class="fg"><label>Destination</label>
+          <select id="fdest" onkeypress="handleEnter(event,'fc')" onchange="onDestinationChange()">
+            <option value="Spain">Spain</option>
+            <option value="Portugal">Portugal</option>
+          </select>
+        </div>
+        <div class="fg" id="fg-center"><label>Center</label>
+          <select id="fc" onkeypress="handleEnter(event,'fcity')" onchange="onCenterChange()">
+            <option value="">Select…</option>
+            <option>CASABLANCA</option>
+            <option>TETOUAN</option>
+            <option>AGADIR</option>
+            <option>TANGIER</option>
+            <option>NADOR</option>
+            <option>RABAT</option>
+          </select>
+        </div>
+        <div class="fg" id="fg-city"><label>City</label><input id="fcity" oninput="toUppercaseField('fcity')" onkeypress="handleEnter(event,'ff')"></div>
+        <div class="fg"><label>First name *</label><input id="ff" oninput="toUppercaseField('ff');updateMrz();onFirstNameChange()" onkeypress="handleEnter(event,'fl')"></div>
+        <div class="fg"><label>Last name *</label><input id="fl" oninput="toUppercaseField('fl');updateMrz()" onkeypress="handleEnter(event,'fp')"></div>
+        <div class="fg"><label>Passport number *</label>
+          <input id="fp" class="mono" oninput="toUppercaseField('fp');updateMrz()" onkeypress="handleEnter(event,'fd')">
+        </div>
+        <div class="fg"><label>Date of birth</label><input type="date" id="fd" oninput="updateMrz();onDateOfBirthChange()" onkeypress="handleEnter(event,'fb')"><div class="field-hint" id="fd-hint"></div></div>
+        <div class="fg"><label>Place of birth</label>
+          <select id="fb" onchange="autoFillIssuePlace()" onkeypress="handleEnter(event,'fi')">
+            <option value="">Select…</option>
+            <option>CASABLANCA</option><option>NADOR</option><option>RABAT</option>
+            <option>TETOUAN</option><option>AGADIR</option><option>TANGER</option>
+            <option>FES</option><option>MARRAKECH</option><option>MEKNES</option><option>OUJDA</option>
+          </select>
+        </div>
+        <div class="fg" id="fg-issueplace"><label>Issue place</label>
+          <select id="fi" onkeypress="handleEnter(event,'fpid')">
+            <option value="">Select…</option>
+            <option>CASABLANCA</option><option>NADOR</option><option>RABAT</option>
+            <option>TETOUAN</option><option>AGADIR</option><option>TANGER</option>
+            <option>FES</option><option>MARRAKECH</option><option>MEKNES</option><option>OUJDA</option>
+          </select>
+        </div>
+        <div class="fg"><label>Passport validity date</label><input type="date" id="fpid" onchange="calcPassportExpiry();validatePassportDates()" onkeypress="handleEnter(event,'fped')"><div class="field-hint" id="fpid-hint"></div></div>
+        <div class="fg"><label>Passport expiry date</label><input type="date" id="fped" onkeypress="handleEnter(event,'fa1')"></div>
+        <div class="fg full" id="fg-homeaddress"><label>Home address</label><input id="fa1" oninput="toUppercaseField('fa1')" onkeypress="handleEnter(event,'fpc')"></div>
+        <div class="fg" id="fg-postalcode"><label>Postal code</label><input id="fpc" onkeypress="handleEnter(event,'fgen')"></div>
+        <div class="fg" id="fg-gender"><label>Gender</label>
+          <select id="fgen" onkeypress="handleEnter(event,'fms')">
+            <option value="">Select…</option>
+            <option>Male</option><option>Female</option>
+          </select>
+        </div>
+        <div class="fg" id="fg-maritalstatus"><label>Marital status</label>
+          <select id="fms" onkeypress="handleEnter(event,'fpj')">
+            <option value="">Select…</option>
+            <option>Single</option><option>Married</option><option>Divorced</option><option>Widowed</option>
+          </select>
+        </div>
+        <div class="fg" id="fg-purpose"><label>Purpose of journey</label>
+          <select id="fpj" onkeypress="handleEnter(event,'fmemb')">
+            <option value="">Select…</option>
+            <option>Tourism</option><option>Business</option><option>Family Visit</option>
+            <option>Medical</option><option>Study</option><option>Transit</option><option>Other</option>
+          </select>
+        </div>
+        <div class="fg" id="fg-memberstate"><label>Member state destination</label>
+          <select id="fmemb" onkeypress="handleEnter(event,'frel')">
+            <option value="Spain">Spain</option>
+            <option value="Portugal">Portugal</option>
+          </select>
+        </div>
+        <div class="fg" id="fg-relationship"><label>Relationship with primary applicant</label>
+          <select id="frel" onkeypress="handleEnter(event,'ff')">
+            <option value="">Select…</option>
+            <option>Father</option><option>Daughter</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="mrz-label">Reference strip</div>
+    <div class="mrz" id="mrz-preview">P&lt;MAR&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;MAR&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</div>
+    <div class="page-footer">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-outline" id="add-family-btn" style="display:none;" onclick="save(true)">+ Add another family member</button>
+      <button class="btn btn-seal" id="save-btn" onclick="save()">Save applicant</button>
+    </div>
+  </div>
+</div>
+
+<div id="licenses-modal" class="modal">
+  <div class="page licenses-page">
+    <div class="page-header">
+      <div>
+        <h2>💳 Device licenses</h2>
+        <small>One license per device — you control activation and expiry</small>
+      </div>
+      <button class="close-btn" onclick="closeLicensesModal()">×</button>
+    </div>
+    <div class="page-body licenses-body">
+      <div class="licenses-toolbar">
+        <button class="btn btn-outline" onclick="loadLicenses()">↻ Refresh</button>
+        <span id="licenses-count" style="margin-left:auto;color:var(--ink-faint);font-size:12px;"></span>
+      </div>
+      <table class="licenses-table">
+        <thead>
+          <tr>
+            <th>Label</th>
+            <th>Device ID</th>
+            <th>Status</th>
+            <th>Expires</th>
+            <th>Last seen</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="licenses-tbody">
+          <tr><td colspan="6" class="lic-empty">Loading…</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  const API = window.location.origin;
+  // Same shared secret as background.js — required by the server on every
+  // write (POST/PUT/DELETE). Patched into fetch once here so every existing
+  // fetch(API + ...) call in this file picks it up automatically.
+  const API_SECRET = '06101c3a5f9c59fdf17701a922974dc72ec97c7b2af603b8';
+  const _origFetch = fetch;
+  window.fetch = function (url, opts = {}) {
+    const urlStr = typeof url === 'string' ? url : (url && url.url) || '';
+    if (urlStr.startsWith(API)) {
+      opts = { ...opts, headers: { ...(opts.headers || {}), 'x-api-secret': API_SECRET } };
+    }
+    return _origFetch(url, opts);
+  };
+  // Who is making changes from THIS browser tab, for the activity log.
+  // The client extension's "Open Web Dashboard" link carries ?deviceId=...
+  // (the PC's own "PC-XXXX..." serial) — use that when present, otherwise
+  // this is the plain admin console.
+  const dashboardActorId = new URLSearchParams(window.location.search).get('deviceId') || 'Admin Dashboard';
+  let apps = [], groups = [], editIdx = -1, filter = 'all';
+  let protectedGroups = new Set(); // names of groups that currently have a password set
+  let adminProtected = false; // whether the global Import password is set
+  let announcementText = '';
+  let announcementColor = '#E8FF25';
+
+  // Indices (into apps[]) currently checked via the row checkboxes, for
+  // bulk delete. Cleared whenever the underlying data reloads/syncs so it
+  // never points at stale rows.
+  let selectedForDelete = new Set();
+  let currentPhotoBase64 = null;
+  let isModalOpen = false;
+  let originalPassportNo = null; // FIX: identity used for atomic edit, independent of the (possibly edited) passport field
+  // Tracks which family groups are currently expanded (showing their
+  // members) while browsing the "All" list. Groups start collapsed —
+  // clicking a family's header row reveals its members; clicking again
+  // hides them.
+  let expandedGroups = new Set();
+  // Destinations (Spain/Portugal) start open by default — collapsing one
+  // hides its cities. Cities start closed — expanding one reveals its
+  // families/individuals. Each node opens and closes independently.
+  let collapsedDestinations = new Set();
+  let expandedCities = new Set();
+  // When a single group is selected via the chips, families within it start
+  // EXPANDED (opposite default from the "All" tree) since the list is
+  // already small — collapsing one hides that family's members.
+  let collapsedFamilyFolders = new Set();
+
+  // FEATURE: First name / Last name are forced to UPPERCASE as the user
+  // types. Passport documents and the MRZ line are always uppercase, so
+  // storing the names that way from the start keeps the printed record,
+  // the list view, and the MRZ preview all consistent — no more entries
+  // that look fine here but come out mismatched on the printed form.
+  function toUppercaseField(id){
+    const el = document.getElementById(id);
+    const pos = el.selectionStart, endPos = el.selectionEnd;
+    const upper = el.value.toUpperCase();
+    if (upper === el.value) return;
+    el.value = upper;
+    if (pos != null) el.setSelectionRange(pos, endPos);
+  }
+
+  // FEATURE: Date of birth → live age display + future-date guard. As soon
+  // as a birth date is picked, the age in years is shown right under the
+  // field. If the date is in the future (impossible), a warning replaces
+  // the age instead — catches typos like the wrong year picked in the date
+  // widget before the record gets saved.
+  function onDateOfBirthChange(){
+    const val = document.getElementById('fd').value;
+    const hint = document.getElementById('fd-hint');
+    if (!val){ hint.textContent = ''; hint.className = 'field-hint'; return; }
+    const dob = new Date(val + 'T00:00:00');
+    if (isNaN(dob)){ hint.textContent = ''; hint.className = 'field-hint'; return; }
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    if (dob > today){
+      hint.textContent = '⚠ Date of birth is in the future';
+      hint.className = 'field-hint warn';
+      return;
+    }
+    let age = today.getFullYear() - dob.getFullYear();
+    const monthDiff = today.getMonth() - dob.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dob.getDate())) age--;
+    hint.textContent = age + (age === 1 ? ' year old' : ' years old');
+    hint.className = 'field-hint info';
+    validatePassportDates();
+  }
+
+  // FEATURE: Passport validity date sanity check — a passport can't have
+  // been issued before the applicant was born. Flags that specific data
+  // entry mistake (usually a wrong year picked in the date widget) without
+  // blocking saving, since the warning alone is enough for the person
+  // entering the data to notice and fix it.
+  function validatePassportDates(){
+    const hint = document.getElementById('fpid-hint');
+    const dobVal = document.getElementById('fd').value;
+    const validityVal = document.getElementById('fpid').value;
+    if (!dobVal || !validityVal){ hint.textContent = ''; hint.className = 'field-hint'; return; }
+    const dob = new Date(dobVal + 'T00:00:00');
+    const validity = new Date(validityVal + 'T00:00:00');
+    if (isNaN(dob) || isNaN(validity)){ hint.textContent = ''; hint.className = 'field-hint'; return; }
+    if (validity < dob){
+      hint.textContent = '⚠ Validity date is before the date of birth';
+      hint.className = 'field-hint warn';
+    } else {
+      hint.textContent = '';
+      hint.className = 'field-hint';
+    }
+  }
+
+  function pad(str, len){
+    str = (str || '').toUpperCase().replace(/[^A-Z0-9]/g, '<');
+    return (str + '<'.repeat(len)).slice(0, len);
+  }
+  function updateMrz(){
+    const last = document.getElementById('fl').value || '';
+    const first = document.getElementById('ff').value || '';
+    const pass = document.getElementById('fp').value || '';
+    const line1 = pad('P<MAR' + last.toUpperCase().replace(/\s/g,'') + '<<' + first.toUpperCase().replace(/\s/g,''), 44);
+    const line2 = pad(pass, 9) + '<' + pad('MAR', 3) + pad('', 27);
+    document.getElementById('mrz-preview').textContent = line1 + '\n' + line2;
+  }
+
+  function autoFillIssuePlace(){
+    const p = document.getElementById('fb').value;
+    const i = document.getElementById('fi');
+    if (p && !i.value) i.value = p;
+  }
+
+  // FEATURE: Passport validity date → Passport expiry date auto-fill.
+  // The moment a validity date is entered (e.g. 01/01/2025), the expiry
+  // date is set 5 years later automatically (e.g. 01/01/2030).
+  function calcPassportExpiry(){
+    const validity = document.getElementById('fpid').value;
+    if (!validity) return;
+    const d = new Date(validity + 'T00:00:00');
+    if (isNaN(d.getTime())) return;
+    d.setFullYear(d.getFullYear() + 5);
+    const yyyy = d.getFullYear();
+    const mm = String(d.getMonth() + 1).padStart(2, '0');
+    const dd = String(d.getDate()).padStart(2, '0');
+    document.getElementById('fped').value = `${yyyy}-${mm}-${dd}`;
+  }
+
+  // FEATURE: Center → Home address / Postal code auto-fill.
+  // The moment a Center is picked, the Home address is set to the same
+  // name as the Center, and the Postal code is filled in automatically
+  // based on that Center's real Moroccan postal code.
+  const CENTER_POSTAL_CODES = {
+    'CASABLANCA': '20000',
+    'TETOUAN': '93000',
+    'AGADIR': '80000',
+    'TANGIER': '90000',
+    'NADOR': '62000',
+    'RABAT': '10000'
+  };
+  // Safely sets a <select>'s value even if the value isn't among its
+  // current <option>s (e.g. Center uses "TANGIER" while Issue place uses
+  // "TANGER") — adds a matching option on the fly rather than silently
+  // leaving the field blank.
+  function setSelectValueSafe(id, value){
+    const sel = document.getElementById(id);
+    if (!sel) return;
+    if (!value){ sel.value = ''; return; }
+    const has = Array.from(sel.options).some(o => o.value === value);
+    if (!has){
+      const opt = document.createElement('option');
+      opt.value = value; opt.textContent = value;
+      sel.appendChild(opt);
+    }
+    sel.value = value;
+  }
+
+  function onCenterChange(){
+    const c = document.getElementById('fc').value;
+    if (!c) return;
+    document.getElementById('fa1').value = c;
+    document.getElementById('fpc').value = CENTER_POSTAL_CODES[c] || '';
+    document.getElementById('fcity').value = c;
+    setSelectValueSafe('fi', c);
+    setSelectValueSafe('fb', c);
+  }
+
+  // FEATURE: First name → Gender auto-fill. As soon as the First name field
+  // matches a known Moroccan/Arabic given name, the Gender select is set
+  // automatically (Male/Female). Only fires on a recognized match — if the
+  // name isn't in the list, Gender is left as-is so nothing is overwritten
+  // with a guess. Matching is case-insensitive and ignores common Latin
+  // transliteration variants.
+  const MALE_FIRST_NAMES = [
+    'mohammed','mohamed','ahmed','ahmad','youssef','yousef','omar','oumar',
+    'hamza','yassine','yassin','anas','ayoub','ayoub','ismail','khalid',
+    'rachid','rashid','said','saeed','hassan','houssam','hicham','hisham',
+    'karim','mehdi','mahdi','nabil','reda','ridwan','salim','saleem',
+    'tarik','tariq','zakaria','zakariae','adam','amine','amin','bilal',
+    'driss','idriss','fouad','jamal','mustapha','moustapha','nourredine',
+    'noureddine','othmane','osman','samir','younes','yunus','abdelali',
+    'abderrahim','abdelaziz','abdelghani','abdelhak','abdelilah','abdellah',
+    'abdelkader','abdellatif','abdelmajid','abdennour','abderrahmane',
+    'abdessamad','achraf','ashraf','adil','aziz','badr','brahim','ibrahim',
+    'chakib','chafik','elmehdi','farid','ghali','habib','hakim','hamid',
+    'imad','issam','jaouad','jawad','kamal','lahcen','larbi','mansour',
+    'marouane','mouad','moad','mounir','nizar','noureddine','rida','rayan',
+    'rayane','said','salah','simohamed','soufiane','sofiane','walid',
+    'wissam','yassir','yasser','ziad','zineddine','abdo','aymane','aymen',
+    'anouar','badreddine','fahd','fahad','hamdane','ilyass','ilias',
+    'ismael','mahmoud','mehdi','naoufal','otmane','rafik','sami','sohaib',
+    'suhaib','taha','yahya','yazid','zaid','zayd'
+  ];
+  const FEMALE_FIRST_NAMES = [
+    'fatima','fatema','khadija','khadeeja','aicha','aisha','zineb','zeineb',
+    'salma','nour','noor','imane','iman','sara','sarah','meryem','maryam',
+    'hind','loubna','sanaa','sana','hanane','hanan','ghita','ghizlane',
+    'nadia','karima','latifa','malika','naima','rajae','raja','samira',
+    'souad','wafaa','wafa','yasmine','yasmin','zahra','zohra','amina',
+    'asmaa','asma','btissam','ibtissam','chaimae','chaimaa','douaa','doha',
+    'fadwa','habiba','jihane','jihan','kaoutar','kawtar','laila','layla',
+    'manal','nawal','ouafae','ouafa','rania','siham','widad','wafaae',
+    'abir','ahlam','amal','assia','aya','bahija','bouchra','dounia',
+    'dunia','farah','farida','ghizlane','hafsa','hajar','hayat','houda',
+    'ikram','ilham','jamila','kenza','khaoula','khawla','lamia','leila',
+    'lina','majda','mounia','nabila','nada','nassima','nawel','oumaima',
+    'oumayma','rabia','rachida','rim','saida','salwa','samia','samya',
+    'sara','selma','soukaina','sukaina','yousra','zakia','zeynab','zineb',
+    'najat','naoual','warda','wiam'
+  ];
+  function detectGenderFromName(name){
+    if (!name) return '';
+    const n = name.trim().toLowerCase();
+    if (!n) return '';
+    // check each whitespace-separated token in case of compound first names
+    const tokens = n.split(/\s+/);
+    for (const t of tokens){
+      if (MALE_FIRST_NAMES.includes(t)) return 'Male';
+      if (FEMALE_FIRST_NAMES.includes(t)) return 'Female';
+    }
+    if (MALE_FIRST_NAMES.includes(n)) return 'Male';
+    if (FEMALE_FIRST_NAMES.includes(n)) return 'Female';
+    return '';
+  }
+  function onFirstNameChange(){
+    const name = document.getElementById('ff').value;
+    const g = detectGenderFromName(name);
+    if (g) document.getElementById('fgen').value = g;
+  }
+
+  // Rebuilds the Center dropdown's options for the given destination.
+  // Portugal is restricted to Casablanca / Rabat only. If a desiredValue
+  // is passed (e.g. while loading an existing applicant for editing) it's
+  // preserved even if it falls outside the normally-allowed set, so no
+  // existing data is silently lost.
+  function updateCenterOptions(destination, desiredValue){
+    const sel = document.getElementById('fc');
+    const value = desiredValue !== undefined ? desiredValue : sel.value;
+    const spainCenters = ['CASABLANCA','TETOUAN','AGADIR','TANGIER','NADOR','RABAT'];
+    const portugalCenters = ['CASABLANCA','RABAT'];
+    const opts = (destination === 'Portugal' ? portugalCenters : spainCenters).slice();
+    if (value && !opts.includes(value)) opts.push(value);
+    sel.innerHTML = '<option value="">Select…</option>' + opts.map(o => `<option>${escapeHtml(o)}</option>`).join('');
+    sel.value = value || '';
+  }
+
+  // FEATURE: Portugal applications only need a reduced set of fields —
+  // First name, Last name, Passport number, Date of birth, Place of birth,
+  // Passport validity date, Passport expiry date, and Center (limited to
+  // Casablanca / Rabat), PLUS Gender / Marital status / Purpose of journey /
+  // Member state destination, which are shown for Portugal too. Everything
+  // else is hidden (but not cleared — values already entered, like the
+  // auto-filled Home address/Postal code, are kept silently in case the
+  // destination is switched back).
+  function updateFieldVisibility(destination){
+    const isPortugal = destination === 'Portugal';
+    const hideIds = ['fg-issueplace','fg-homeaddress','fg-city','fg-postalcode','fg-relationship'];
+    hideIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.style.display = isPortugal ? 'none' : '';
+    });
+  }
+
+  // FEATURE: Member state destination always mirrors the chosen Destination
+  // (Spain → Spain, Portugal → Portugal) so it never drifts out of sync.
+  function syncMemberState(destination){
+    const el = document.getElementById('fmemb');
+    if (el) el.value = destination === 'Portugal' ? 'Portugal' : 'Spain';
+  }
+
+  function onDestinationChange(desiredCenterValue){
+    const dest = document.getElementById('fdest').value;
+    const val = desiredCenterValue !== undefined ? desiredCenterValue : document.getElementById('fc').value;
+    updateCenterOptions(dest, val);
+    updateFieldVisibility(dest);
+    syncMemberState(dest);
+  }
+
+  function handleEnter(event, nextFieldId){
+    if (event.key === 'Enter'){
+      event.preventDefault();
+      const next = document.getElementById(nextFieldId);
+      if (next) next.focus(); else save();
+    }
+  }
+
+  async function loadData(){
+    try{
+      // cache: 'no-store' + a cache-busting timestamp make sure this always
+      // hits the server, never a stale cached copy from the browser or a
+      // proxy — that stale-copy issue was why photos/passport edits didn't
+      // show up until a hard refresh.
+      const r = await fetch(API + '/api/applicants?_=' + Date.now(), { cache: 'no-store' });
+      const d = await r.json();
+      apps = d.applicants || [];
+      groups = d.groups || [];
+      selectedForDelete.clear(); // indices are meaningless once the whole list is replaced
+      await refreshProtectedGroups();
+      await refreshAdminProtected();
+      await refreshAnnouncement();
+      await refreshLicenseFlagDot();
+      updateUI();
+      updateLastUpdateChip();
+    }catch(e){ console.error('Load failed', e); }
+  }
+
+  // Shows, in the topbar, which group the most recently added/edited
+  // applicant belongs to, and exactly when (date + hour + minute) —
+  // so the admin can see at a glance who last filled something in.
+  function formatLastUpdateStamp(ts){
+    const d = new Date(ts);
+    if (isNaN(d)) return '—';
+    const dd = String(d.getDate()).padStart(2,'0');
+    const mm = String(d.getMonth()+1).padStart(2,'0');
+    const yyyy = d.getFullYear();
+    const hh = String(d.getHours()).padStart(2,'0');
+    const min = String(d.getMinutes()).padStart(2,'0');
+    return `${dd}/${mm}/${yyyy} ${hh}:${min}`;
+  }
+
+  function updateLastUpdateChip(){
+    const textEl = document.getElementById('last-update-text');
+    if (!textEl) return;
+    if (!apps.length){ textEl.textContent = '—'; return; }
+    let latest = null;
+    for (const a of apps){
+      const ts = a._updatedAt || a._createdAt || 0;
+      if (!latest || ts > (latest._updatedAt || latest._createdAt || 0)) latest = a;
+    }
+    if (!latest){ textEl.textContent = '—'; return; }
+    const ts = latest._updatedAt || latest._createdAt;
+    const groupName = latest.group || 'بدون كروب';
+    textEl.textContent = ts ? `${groupName} — ${formatLastUpdateStamp(ts)}` : groupName;
+  }
+
+  // Small red signal on the Licenses button: how many devices typed in an
+  // invalid serial (auto-blocked), so the admin notices without opening
+  // the panel. Only checked once the admin password has been entered this
+  // session — the count itself is admin-only info now.
+  async function refreshLicenseFlagDot(){
+    const dot = document.getElementById('lic-flag-dot');
+    if (!dot) return;
+    if (!licensesPassword){ dot.style.display = 'none'; return; }
+    try{
+      const r = await fetch(API + '/api/admin/licenses/flags-count', {
+        headers: { 'x-admin-password': licensesPassword }
+      });
+      const d = await r.json();
+      const count = d.count || 0;
+      if (count > 0){
+        dot.textContent = count > 99 ? '99+' : String(count);
+        dot.style.display = 'inline-block';
+      } else {
+        dot.style.display = 'none';
+      }
+    }catch(e){ /* silent — non-critical */ }
+  }
+
+  async function refreshAnnouncement(){
+    try{
+      const r = await fetch(API + '/api/announcement');
+      const d = await r.json();
+      announcementText = (d && d.text) || '';
+      announcementColor = (d && d.color) || '#E8FF25';
+    }catch(e){ console.error('Could not load announcement', e); }
+    renderAnnouncement();
+  }
+
+  function hexToRgba(hex, alpha){
+    const m = /^#([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})([0-9A-Fa-f]{2})$/.exec(hex);
+    if (!m) return `rgba(245,158,11,${alpha})`;
+    const r = parseInt(m[1], 16), g = parseInt(m[2], 16), b = parseInt(m[3], 16);
+    return `rgba(${r},${g},${b},${alpha})`;
+  }
+
+  function renderAnnouncement(){
+    const bar = document.getElementById('announce-bar');
+    const textEl = document.getElementById('announce-text');
+    if (announcementText){
+      textEl.textContent = announcementText;
+      bar.style.setProperty('--announce-color', announcementColor);
+      bar.style.setProperty('--announce-glow', hexToRgba(announcementColor, 0.55));
+      bar.style.display = 'flex';
+    } else {
+      bar.style.display = 'none';
+    }
+  }
+
+  // Named neon shades, also used to build the swatch buttons below.
+  const ANNOUNCE_COLOR_NAMES = {
+    lemon: '#E8FF25', lime: '#B4FF00', orange: '#FF8A00', red: '#FF1744',
+    green: '#39FF14', blue: '#00E5FF', yellow: '#FFF200', pink: '#FF2ED1',
+    purple: '#B026FF', white: '#FFFFFF', teal: '#00FFC2'
+  };
+
+  // Tappable color-swatch picker — no typing required. Resolves with the
+  // chosen hex, or with `current` unchanged if the user backs out.
+  function pickAnnounceColor(current){
+    return new Promise((resolve) => {
+      const overlay = document.createElement('div');
+      overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:10020;display:flex;align-items:center;justify-content:center;';
+
+      const panel = document.createElement('div');
+      panel.style.cssText = 'background:#1b1730;border:1px solid rgba(255,255,255,0.12);border-radius:14px;padding:20px;width:min(90vw,340px);box-shadow:0 20px 50px rgba(0,0,0,0.5);font-family:system-ui;';
+
+      const title = document.createElement('div');
+      title.textContent = 'Pick a banner color';
+      title.style.cssText = 'color:#fff;font-weight:700;font-size:15px;margin-bottom:14px;';
+      panel.appendChild(title);
+
+      const grid = document.createElement('div');
+      grid.style.cssText = 'display:grid;grid-template-columns:repeat(3,1fr);gap:10px;';
+      Object.entries(ANNOUNCE_COLOR_NAMES).forEach(([name, hex]) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.style.cssText = `display:flex;flex-direction:column;align-items:center;gap:6px;background:transparent;border:2px solid ${hex.toLowerCase() === (current || '').toLowerCase() ? '#fff' : 'transparent'};border-radius:10px;padding:8px 4px;cursor:pointer;`;
+        btn.innerHTML = `
+          <span style="width:32px;height:32px;border-radius:50%;background:${hex};box-shadow:0 0 10px ${hex}99;display:block;"></span>
+          <span style="color:#e5e7eb;font-size:11px;text-transform:capitalize;">${name}</span>
+        `;
+        btn.onclick = () => { document.body.removeChild(overlay); resolve(hex); };
+        grid.appendChild(btn);
+      });
+      panel.appendChild(grid);
+
+      const cancelBtn = document.createElement('button');
+      cancelBtn.type = 'button';
+      cancelBtn.textContent = 'Cancel';
+      cancelBtn.style.cssText = 'margin-top:16px;width:100%;background:rgba(255,255,255,0.08);color:#e5e7eb;border:none;border-radius:8px;padding:9px;font-size:13px;cursor:pointer;';
+      cancelBtn.onclick = () => { document.body.removeChild(overlay); resolve(current); };
+      panel.appendChild(cancelBtn);
+
+      overlay.appendChild(panel);
+      overlay.addEventListener('click', (e) => { if (e.target === overlay){ document.body.removeChild(overlay); resolve(current); } });
+      document.body.appendChild(overlay);
+    });
+  }
+
+  async function editAnnouncement(){
+    const input = prompt('Announcement message (shown as a banner to everyone — leave empty to remove it):', announcementText);
+    if (input === null) return;
+    const text = input.trim();
+    let color = announcementColor;
+    if (text){
+      color = await pickAnnounceColor(announcementColor);
+    }
+    try{
+      if (text){
+        await fetch(API + '/api/announcement', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, color })
+        });
+        stamp('Announcement posted');
+      } else {
+        await fetch(API + '/api/announcement', { method: 'DELETE' });
+        stamp('Announcement removed');
+      }
+      announcementText = text;
+      announcementColor = color;
+      renderAnnouncement();
+    }catch(e){ stamp('Could not update announcement', 'error'); }
+  }
+
+  async function refreshProtectedGroups(){
+    try{
+      const r = await fetch(API + '/api/groups/protected');
+      const d = await r.json();
+      protectedGroups = new Set(d.protected || []);
+    }catch(e){ console.error('Could not load protected-group list', e); }
+  }
+
+  // Prompts for a password (up to 3 tries) and verifies it against the
+  // server for the given group. Groups with no password set always pass
+  // instantly. Returns true if unlocked, false if the user cancelled or
+  // failed 3 times.
+  async function ensureGroupUnlocked(groupName, actionLabel){
+    // ADMIN BUILD: group password prompt disabled — this build always has
+    // full edit/delete/rename access to every group without being asked
+    // for a password. Group passwords set on the server are untouched and
+    // still apply to any other client (e.g. the regular dashboard/client
+    // extension) that still calls the real check.
+    return true;
+  }
+
+  async function setGroupPassword(groupName, currentPassword){
+    const pw = prompt(`Set a password for group "${groupName}" (min 4 characters):`);
+    if (pw === null) return;
+    if (pw.trim().length < 4){ stamp('Password must be at least 4 characters', 'error'); return; }
+    try{
+      const r = await fetch(API + '/api/groups/' + encodeURIComponent(groupName) + '/password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw.trim(), currentPassword })
+      });
+      if (!r.ok){ const d = await r.json().catch(()=>({})); stamp(d.error || 'Could not set password', 'error'); return; }
+      protectedGroups.add(groupName);
+      stamp('Group password set');
+    }catch(e){ stamp('Could not set password', 'error'); }
+  }
+
+  async function changeGroupPassword(groupName){
+    const current = prompt(`Current password for "${groupName}":`);
+    if (current === null) return;
+    await setGroupPassword(groupName, current);
+  }
+
+  async function forgotGroupPassword(groupName){
+    if (!confirm(`Reset the password for group "${groupName}"? The new password will be sent to the configured WhatsApp number, not shown here.`)) return;
+    try{
+      const r = await fetch(API + '/api/groups/' + encodeURIComponent(groupName) + '/forgot-password', { method: 'POST' });
+      const d = await r.json().catch(()=>({}));
+      if (!r.ok){
+        stamp(d.error === 'no_phone_configured' ? 'No phone configured on the server for reset' : (d.error || 'Could not reset password'), 'error');
+        return;
+      }
+      alert(`A new password for group "${groupName}" was sent via WhatsApp.`);
+      stamp('Password reset — check WhatsApp');
+    }catch(e){ stamp('Could not reset password', 'error'); }
+  }
+
+  // Small combined prompt shown from the key icon on a group chip.
+  async function openGroupPasswordMenu(groupName){
+    if (!protectedGroups.has(groupName)){
+      await setGroupPassword(groupName, null);
+      updateUI();
+      return;
+    }
+    const choice = confirm(
+      `Group "${groupName}" is password-protected.\n\nOK = change the password (you'll need the current one)\nCancel = send a new one to WhatsApp instead`
+    );
+    if (choice) await changeGroupPassword(groupName);
+    else await forgotGroupPassword(groupName);
+    updateUI();
+  }
+
+  // ===== Global import/master password (separate from per-group ones) =====
+
+  async function refreshAdminProtected(){
+    try{
+      const r = await fetch(API + '/api/admin/protected');
+      const d = await r.json();
+      adminProtected = !!d.protected;
+    }catch(e){ console.error('Could not load admin-protected status', e); }
+  }
+
+  async function ensureAdminUnlocked(actionLabel){
+    // ADMIN BUILD: import/licenses password prompt disabled — always
+    // treated as unlocked. The server-side password (if any is set) is
+    // untouched, this just stops this build from ever asking for it.
+    return true;
+  }
+
+  async function setAdminPassword(currentPassword){
+    const pw = prompt('Set the admin password (protects Import and Licenses, min 4 characters):');
+    if (pw === null) return;
+    if (pw.trim().length < 4){ stamp('Password must be at least 4 characters', 'error'); return; }
+    try{
+      const r = await fetch(API + '/api/admin/password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw.trim(), currentPassword })
+      });
+      if (!r.ok){ const d = await r.json().catch(()=>({})); stamp(d.error || 'Could not set password', 'error'); return; }
+      adminProtected = true;
+      stamp('Import password set');
+    }catch(e){ stamp('Could not set password', 'error'); }
+  }
+
+  async function changeAdminPassword(){
+    const current = prompt('Current admin password:');
+    if (current === null) return;
+    await setAdminPassword(current);
+  }
+
+  async function forgotAdminPassword(){
+    if (!confirm('Reset the admin password? The new password will be sent to the configured WhatsApp number, not shown here.')) return;
+    try{
+      const r = await fetch(API + '/api/admin/forgot-password', { method: 'POST' });
+      const d = await r.json().catch(()=>({}));
+      if (!r.ok){
+        stamp(d.error === 'no_phone_configured' ? 'No phone configured on the server for reset' : (d.error || 'Could not reset password'), 'error');
+        return;
+      }
+      alert('A new admin password was sent via WhatsApp.');
+      stamp('Password reset — check WhatsApp');
+    }catch(e){ stamp('Could not reset password', 'error'); }
+  }
+
+  async function openAdminPasswordMenu(){
+    if (!adminProtected){
+      await setAdminPassword(null);
+      return;
+    }
+    const choice = confirm(
+      'Import/Licenses are password-protected.\n\nOK = change the password (you\'ll need the current one)\nCancel = send a new one to WhatsApp instead'
+    );
+    if (choice) await changeAdminPassword();
+    else await forgotAdminPassword();
+  }
+
+  // ===== Master override password (skeleton key for every group + import) =====
+
+  async function setMasterPassword(currentPassword){
+    const pw = prompt('Set the MASTER password (min 4 characters).\nThis will unlock EVERY group and the import password — keep it safe:');
+    if (pw === null) return;
+    if (pw.trim().length < 4){ stamp('Password must be at least 4 characters', 'error'); return; }
+    try{
+      const r = await fetch(API + '/api/master/password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: pw.trim(), currentPassword })
+      });
+      if (!r.ok){ const d = await r.json().catch(()=>({})); stamp(d.error || 'Could not set master password', 'error'); return; }
+      stamp('Master password set');
+    }catch(e){ stamp('Could not set master password', 'error'); }
+  }
+
+  async function changeMasterPassword(){
+    const current = prompt('Current master password:');
+    if (current === null) return;
+    await setMasterPassword(current);
+  }
+
+  async function forgotMasterPassword(){
+    if (!confirm('Reset the master password? The new password will be sent to the configured WhatsApp number, not shown here.')) return;
+    try{
+      const r = await fetch(API + '/api/master/forgot-password', { method: 'POST' });
+      const d = await r.json().catch(()=>({}));
+      if (!r.ok){
+        stamp(d.error === 'no_phone_configured' ? 'No phone configured on the server for reset' : (d.error || 'Could not reset password'), 'error');
+        return;
+      }
+      alert('A new master password was sent via WhatsApp.');
+      stamp('Password reset — check WhatsApp');
+    }catch(e){ stamp('Could not reset password', 'error'); }
+  }
+
+  async function openMasterPasswordMenu(){
+    let isSet = false;
+    try{
+      const r = await fetch(API + '/api/master/protected');
+      isSet = !!(await r.json()).protected;
+    }catch(e){ stamp('Could not reach server', 'error'); return; }
+    if (!isSet){
+      await setMasterPassword(null);
+      return;
+    }
+    const choice = confirm(
+      'A master password is already set.\n\nOK = change it (you\'ll need the current one)\nCancel = send a new one to WhatsApp instead'
+    );
+    if (choice) await changeMasterPassword();
+    else await forgotMasterPassword();
+  }
+
+  function updateUI(){
+    document.getElementById('total-applicants').textContent = apps.length;
+    document.getElementById('total-groups').textContent = groups.length;
+    const withPhoto = apps.filter(a => a.photo).length;
+    document.getElementById('with-photos').childNodes[0].textContent = withPhoto;
+    document.getElementById('photo-pct').textContent = apps.length ? Math.round(withPhoto/apps.length*100) + '%' : '';
+    document.getElementById('manifest-meta').textContent = apps.length + ' record' + (apps.length===1?'':'s') + ' on file';
+
+    // A <datalist> can be refreshed freely without disturbing whatever the
+    // user is currently typing in the family-name field, unlike a <select>.
+    const fgList = document.getElementById('fg-list');
+    fgList.innerHTML = groups.slice().sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })).map(g => `<option value="${g}">`).join('');
+
+    // Family name suggestions are drawn from names already used on file,
+    // independent of the Group list above.
+    const fnameList = document.getElementById('fname-list');
+    const uniqueFamilyNames = [...new Set(apps.map(a => a.FamilyName).filter(Boolean))];
+    fnameList.innerHTML = uniqueFamilyNames.map(n => `<option value="${n}">`).join('');
+
+    const gf = document.getElementById('groups-filter');
+    gf.innerHTML = '';
+    const all = document.createElement('div');
+    all.className = 'chip' + (filter === 'all' ? ' active' : '');
+    all.textContent = `All (${apps.length})`;
+    all.onclick = () => { filter = 'all'; updateUI(); };
+    gf.appendChild(all);
+
+    groups.slice().sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })).forEach(g => {
+      const cnt = apps.filter(a => a.group === g).length;
+      const chip = document.createElement('div');
+      chip.className = 'chip' + (filter === g ? ' active' : '');
+      chip.title = `Tap to filter — press and hold, then press Enter to delete group "${g}"`;
+
+      const fill = document.createElement('div');
+      fill.className = 'hold-fill';
+      chip.appendChild(fill);
+
+      const label = document.createElement('span');
+      label.className = 'chip-label';
+      label.textContent = `${g} (${cnt})`;
+      chip.appendChild(label);
+
+      // Small pencil icon to rename this group in place — separate from the
+      // tap-to-filter / hold-to-delete gestures on the rest of the chip, so
+      // its own clicks/presses are stopped from bubbling into those.
+      const editBtn = document.createElement('span');
+      editBtn.className = 'chip-edit';
+      editBtn.textContent = '✎';
+      editBtn.title = `Rename group "${g}"`;
+      editBtn.onclick = (e) => { e.stopPropagation(); renameGroup(g); };
+      editBtn.onmousedown = (e) => e.stopPropagation();
+      editBtn.onmouseup = (e) => e.stopPropagation();
+      editBtn.ontouchstart = (e) => e.stopPropagation();
+      editBtn.ontouchend = (e) => e.stopPropagation();
+      chip.appendChild(editBtn);
+
+      // Key icon: set a password (if none yet), or change/forgot it.
+      const keyBtn = document.createElement('span');
+      keyBtn.className = 'chip-edit';
+      keyBtn.textContent = protectedGroups.has(g) ? '🔒' : '🔓';
+      keyBtn.title = protectedGroups.has(g) ? `Change or reset password for "${g}"` : `Set a password for "${g}"`;
+      keyBtn.onclick = (e) => { e.stopPropagation(); openGroupPasswordMenu(g); };
+      keyBtn.onmousedown = (e) => e.stopPropagation();
+      keyBtn.onmouseup = (e) => e.stopPropagation();
+      keyBtn.ontouchstart = (e) => e.stopPropagation();
+      keyBtn.ontouchend = (e) => e.stopPropagation();
+      chip.appendChild(keyBtn);
+
+      // Export icon: download this group's applicants only.
+      const exportBtn = document.createElement('span');
+      exportBtn.className = 'chip-edit';
+      exportBtn.textContent = '💾';
+      exportBtn.title = `Export "${g}" only`;
+      exportBtn.onclick = (e) => { e.stopPropagation(); exportGroupData(g); };
+      exportBtn.onmousedown = (e) => e.stopPropagation();
+      exportBtn.onmouseup = (e) => e.stopPropagation();
+      exportBtn.ontouchstart = (e) => e.stopPropagation();
+      exportBtn.ontouchend = (e) => e.stopPropagation();
+      chip.appendChild(exportBtn);
+
+      // Import icon: load a file straight into this group only — never
+      // touches any other group's data.
+      const importBtn = document.createElement('span');
+      importBtn.className = 'chip-edit';
+      importBtn.textContent = '📤';
+      importBtn.title = `Import into "${g}" only`;
+      importBtn.onclick = (e) => { e.stopPropagation(); importGroupData(g); };
+      importBtn.onmousedown = (e) => e.stopPropagation();
+      importBtn.onmouseup = (e) => e.stopPropagation();
+      importBtn.ontouchstart = (e) => e.stopPropagation();
+      importBtn.ontouchend = (e) => e.stopPropagation();
+      chip.appendChild(importBtn);
+
+      // A quick tap selects the group as the active filter. Holding the
+      // chip down and pressing Enter while still held deletes the group
+      // instead. If Enter already fired the delete (holdCell was cleared
+      // by the keydown handler before mouseup), don't also select it as
+      // the filter; otherwise (a normal tap/hold-and-release with no
+      // Enter) fall back to the normal tap-to-filter behavior.
+      const selectFilter = () => { filter = g; updateUI(); };
+      const onPressStart = (e) => startHold(chip, () => deleteGroup(g, true));
+      const onPressEnd = (e) => {
+        const wasHolding = holdCell === chip;
+        holdEnd();
+        if (wasHolding) selectFilter();
+      };
+      chip.onmousedown = onPressStart;
+      chip.onmouseup = onPressEnd;
+      chip.onmouseleave = () => holdEnd();
+      chip.ontouchstart = onPressStart;
+      chip.ontouchend = onPressEnd;
+      chip.ontouchcancel = () => holdEnd();
+      gf.appendChild(chip);
+    });
+
+    filterApplicants();
+  }
+
+  function escapeHtml(s){
+    return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+  function escapeJs(s){
+    return String(s == null ? '' : s).replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+  }
+
+  // FEATURE: Passport expiry warning — flags applicants whose passport is
+  // already expired or expiring within 6 months, right in the list, so
+  // nobody submits a file with a passport that won't be valid long enough.
+  function getExpiryBadge(expiryDateStr){
+    if (!expiryDateStr) return '';
+    const expiry = new Date(expiryDateStr);
+    if (isNaN(expiry)) return '';
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const msPerDay = 1000 * 60 * 60 * 24;
+    const daysLeft = Math.round((expiry - today) / msPerDay);
+    if (daysLeft < 0) return `<span class="expiry-badge expired">⚠ Expired</span>`;
+    if (daysLeft <= 182) return `<span class="expiry-badge soon">⏳ Expires soon</span>`;
+    return '';
+  }
+
+  function formatAddedDate(ts){
+    if (!ts) return '<span class="dash">—</span>';
+    const d = new Date(ts);
+    if (isNaN(d)) return '<span class="dash">—</span>';
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+  }
+
+  // ---- Auto-delete countdown (20 days after creation) ----
+  const RETENTION_MS = 20 * 24 * 60 * 60 * 1000;
+  function countdownInfo(created){
+    const left = created + RETENTION_MS - Date.now();
+    if (left <= 0) return { text: '⏳ 0', color: '#e74c3c' };
+    const d = Math.floor(left / 86400000), h = Math.floor((left % 86400000) / 3600000),
+          m = Math.floor((left % 3600000) / 60000), s = Math.floor((left % 60000) / 1000);
+    const pad = n => String(n).padStart(2, '0');
+    return { text: `⏳ ${d}j ${pad(h)}:${pad(m)}:${pad(s)}`, color: d < 1 ? '#e74c3c' : d < 5 ? '#f39c12' : '#7f8c8d' };
+  }
+  function countdownHTML(a){
+    const created = a._createdAt || a._updatedAt;
+    if (!created) return '';
+    const c = countdownInfo(created);
+    return `<div class="del-countdown" data-created="${created}" title="الحذف أوطو بعد 20 يوم من الإنشاء" style="font-size:10px;margin-top:2px;color:${c.color};font-variant-numeric:tabular-nums;">${c.text}</div>`;
+  }
+  setInterval(() => {
+    document.querySelectorAll('.del-countdown').forEach(el => {
+      const c = countdownInfo(parseInt(el.dataset.created));
+      el.textContent = c.text; el.style.color = c.color;
+    });
+  }, 1000);
+
+  function renderApplicantRow(a){
+    const idx = apps.indexOf(a);
+    return `<tr>
+        <td><input type="checkbox" class="select-cb" data-idx="${idx}" ${selectedForDelete.has(idx) ? 'checked' : ''} onclick="toggleSelect(${idx})"></td>
+        <td class="row-no">${String(idx+1).padStart(3,'0')}</td>
+        <td>${a.photo ? `<img class="photo-thumb" src="${a.photo}">` : '<div class="no-photo">—</div>'}</td>
+        <td class="name-cell holdable" data-idx="${idx}" onmousedown="holdStart(event,${idx})" onmouseup="holdEnd()" onmouseleave="holdEnd()" ontouchstart="holdStart(event,${idx})" ontouchend="holdEnd()" ontouchcancel="holdEnd()"><div class="hold-fill"></div><strong>${a.FirstName||''} ${a.LastName||''}</strong>${(a.City||a.PostalCode) ? `<small>${[a.City,a.PostalCode].filter(Boolean).join(', ')}</small>` : ''}</td>
+        <td class="mono">${a.PassportNo||''}${getExpiryBadge(a.PassportExpiryDate)}</td>
+        <td>${a.DateOfBirth || '<span class="dash">—</span>'}</td>
+        <td>${a.PlaceOfBirth || '<span class="dash">—</span>'}</td>
+        <td>${a.group ? `<span class="group-tag">${a.group}</span>` : '<span class="dash">—</span>'} ${a.ApplicationType === 'Family' ? '<span class="tag-family-type">Family</span>' : ''} ${a.FamilyName ? `<span class="tag-family-name">👪 ${a.FamilyName}</span>` : ''} ${a.Destination ? `<span class="${a.Destination === 'Portugal' ? 'tag-destination-portugal' : 'tag-destination-spain'}">${a.Destination}</span>` : ''} ${a.Gender ? `<span class="${a.Gender === 'Female' ? 'tag-gender-female' : 'tag-gender-male'}">${a.Gender}</span>` : ''}</td>
+        <td class="mono" style="font-size:11px;">${formatAddedDate(a._createdAt || a._updatedAt)}${countdownHTML(a)}</td>
+        <td><div class="row-actions">
+          ${a.photo ? `<button class="icon-btn" onclick="downloadPhoto(${idx})">Photo</button>` : ''}
+          <button class="icon-btn" onclick="edit(${idx})">Edit</button>
+        </div></td>
+      </tr>`;
+  }
+
+  function groupByKey(list, keyFn){
+    const map = new Map();
+    list.forEach(item => {
+      const k = keyFn(item);
+      if (!map.has(k)) map.set(k, []);
+      map.get(k).push(item);
+    });
+    return map;
+  }
+
+  // FEATURE: Destination → City → Family tree — each level opens and
+  // closes independently, like folders. Destinations start open, cities
+  // and families start closed so the list stays compact until you drill
+  // into the one you need.
+  function renderDestinationTree(list){
+    const byDest = groupByKey(list, a => a.Destination || 'Unspecified destination');
+    const destKeys = Array.from(byDest.keys()).sort((a, b) => a.localeCompare(b));
+    let html = '';
+
+    destKeys.forEach(dest => {
+      const destApps = byDest.get(dest);
+      const destCollapsed = collapsedDestinations.has(dest);
+      const dArrow = destCollapsed ? '▸' : '▾';
+      html += `<tr class="destination-header-row" onclick="toggleDestination('${escapeJs(dest)}')"><td colspan="10"><span class="tree-arrow">${dArrow}</span>${escapeHtml(dest)} — ${destApps.length} applicant${destApps.length===1?'':'s'}</td></tr>`;
+      if (destCollapsed) return;
+
+      const byCity = groupByKey(destApps, a => a.City || 'Unspecified city');
+      const cityKeys = Array.from(byCity.keys()).sort((a, b) => a.localeCompare(b));
+
+      cityKeys.forEach(city => {
+        const cityApps = byCity.get(city);
+        const cityKey = dest + '::' + city;
+        const cityExpanded = expandedCities.has(cityKey);
+        const cArrow = cityExpanded ? '▾' : '▸';
+        html += `<tr class="city-header-row" onclick="toggleCity('${escapeJs(cityKey)}')"><td colspan="10"><span class="tree-arrow">${cArrow}</span>${escapeHtml(city)} — ${cityApps.length} applicant${cityApps.length===1?'':'s'}</td></tr>`;
+        if (!cityExpanded) return;
+
+        const cityFamilyMembers = cityApps.filter(a => a.ApplicationType === 'Family');
+        const cityIndividuals = cityApps.filter(a => a.ApplicationType !== 'Family');
+
+        if (cityFamilyMembers.length){
+          html += `<tr class="section-header-row"><td colspan="10">👪 Family applications — ${cityFamilyMembers.length}</td></tr>`;
+          const byFamily = groupByKey(cityFamilyMembers, a => a.FamilyName || '');
+          const familyKeys = Array.from(byFamily.keys()).filter(k => k).sort((a, b) => a.localeCompare(b));
+
+          familyKeys.forEach(fam => {
+            const members = byFamily.get(fam);
+            const famExpanded = expandedGroups.has(fam);
+            const fArrow = famExpanded ? '▾' : '▸';
+            html += `<tr class="group-header-row" onclick="toggleGroup('${escapeJs(fam)}')"><td colspan="10"><span class="group-header-arrow">${fArrow}</span>👪 ${escapeHtml(fam)} — ${members.length} member${members.length===1?'':'s'}<span class="family-edit" title="Rename family" onclick="event.stopPropagation();renameFamilyName('${escapeJs(fam)}')">✎</span></td></tr>`;
+            if (famExpanded) members.forEach(a => { html += renderApplicantRow(a); });
+          });
+
+          (byFamily.get('') || []).forEach(a => { html += renderApplicantRow(a); });
+        }
+
+        if (cityIndividuals.length){
+          html += `<tr class="section-header-row"><td colspan="10">👤 Individual applications — ${cityIndividuals.length}</td></tr>`;
+          cityIndividuals.forEach(a => { html += renderApplicantRow(a); });
+        }
+      });
+    });
+
+    return html;
+  }
+
+  // FEATURE: Family folders within a single selected group — a Group chip
+  // (e.g. "BOUCHAIB") can contain several distinct families (different
+  // Family names), so members are clustered by FamilyName into their own
+  // collapsible folder instead of one long flat list. On top of that,
+  // Family-type applications and Individual-type applications are kept in
+  // two clearly separate sections so they never blend into each other.
+  function renderFamilyGroupedList(list){
+    const familyMembers = list.filter(a => a.ApplicationType === 'Family');
+    const individuals = list.filter(a => a.ApplicationType !== 'Family');
+    let html = '';
+
+    if (familyMembers.length){
+      html += `<tr class="section-header-row"><td colspan="10">👪 Family applications — ${familyMembers.length}</td></tr>`;
+      const byFamily = groupByKey(familyMembers, a => a.FamilyName || '');
+      const familyKeys = Array.from(byFamily.keys()).filter(k => k).sort((a, b) => a.localeCompare(b));
+      familyKeys.forEach(fam => {
+        const members = byFamily.get(fam);
+        const collapsed = collapsedFamilyFolders.has(fam);
+        const fArrow = collapsed ? '▸' : '▾';
+        html += `<tr class="group-header-row" onclick="toggleFamilyFolder('${escapeJs(fam)}')"><td colspan="10"><span class="group-header-arrow">${fArrow}</span>👪 ${escapeHtml(fam)} — ${members.length} member${members.length===1?'':'s'}<span class="family-edit" title="Rename family" onclick="event.stopPropagation();renameFamilyName('${escapeJs(fam)}')">✎</span></td></tr>`;
+        if (!collapsed) members.forEach(a => { html += renderApplicantRow(a); });
+      });
+      // Family-type members that don't have a Family name yet — shown directly, still inside the Family section
+      (byFamily.get('') || []).forEach(a => { html += renderApplicantRow(a); });
+    }
+
+    if (individuals.length){
+      html += `<tr class="section-header-row"><td colspan="10">👤 Individual applications — ${individuals.length}</td></tr>`;
+      individuals.forEach(a => { html += renderApplicantRow(a); });
+    }
+
+    return html;
+  }
+
+  // FEATURE: Rename a family (the FamilyName field) across all its members
+  // in one go. Unlike Group, FamilyName isn't tracked as its own list on
+  // the server — it's just a field on each applicant — so renaming it is
+  // simpler than renameGroup: update the field locally, bump _updatedAt so
+  // the change wins on sync, and push. The family-name suggestion list is
+  // derived fresh from applicants after every sync, so nothing is left
+  // stale.
+  async function renameFamilyName(oldFam){
+    const input = prompt(`Rename family "${oldFam}" to:`, oldFam);
+    if (input === null) return;
+    const newFam = input.trim();
+    if (!newFam){ stamp('Family name cannot be empty', 'error'); return; }
+    if (newFam === oldFam) return;
+    const existingMembers = apps.filter(a => a.FamilyName === newFam).length;
+    if (existingMembers && !confirm(`A family named "${newFam}" already exists (${existingMembers} member(s)). Merge "${oldFam}" into it?`)) return;
+    const now = Date.now();
+    apps.forEach(a => { if (a.FamilyName === oldFam){ a.FamilyName = newFam; a._updatedAt = now; } });
+    if (collapsedFamilyFolders.has(oldFam)){ collapsedFamilyFolders.delete(oldFam); collapsedFamilyFolders.add(newFam); }
+    if (expandedGroups.has(oldFam)){ expandedGroups.delete(oldFam); expandedGroups.add(newFam); }
+    try{
+      await sync();
+      stamp(existingMembers ? `Merged into family "${newFam}"` : 'Family renamed');
+    }catch(e){
+      stamp('Rename failed', 'error');
+    }
+  }
+
+  function toggleFamilyFolder(fam){
+    if (collapsedFamilyFolders.has(fam)) collapsedFamilyFolders.delete(fam);
+    else collapsedFamilyFolders.add(fam);
+    filterApplicants();
+  }
+
+  function getFilteredApplicants(){
+    const q = document.getElementById('search').value.toLowerCase();
+    return apps.filter(a => {
+      if (filter !== 'all' && a.group !== filter) return false;
+      if (!q) return true;
+      return (a.FirstName||'').toLowerCase().includes(q) ||
+             (a.LastName||'').toLowerCase().includes(q) ||
+             (a.PassportNo||'').toLowerCase().includes(q) ||
+             (a.group||'').toLowerCase().includes(q) ||
+             (a.FamilyName||'').toLowerCase().includes(q);
+    });
+  }
+
+  function filterApplicants(){
+    let filtered = getFilteredApplicants();
+
+    const tb = document.getElementById('tbody');
+    if (!filtered.length){
+      tb.innerHTML = `<tr><td colspan="10"><div class="empty-state"><div class="mark">∅</div><p>No matching records</p></div></td></tr>`;
+      updateSelectedButton();
+      return;
+    }
+
+    // A group chip scopes the list to one group, but we still want it broken
+    // down the same way as "All": Spain / Portugal first, then each one's
+    // Center, and within a Center the families/individuals. So both cases
+    // now go through the same Destination → Center → Family tree — a group
+    // is just a pre-filtered slice of that tree, not a different layout.
+    tb.innerHTML = renderDestinationTree(filtered);
+    updateSelectedButton();
+  }
+
+  function toggleDestination(dest){
+    if (collapsedDestinations.has(dest)) collapsedDestinations.delete(dest);
+    else collapsedDestinations.add(dest);
+    filterApplicants();
+  }
+
+  function toggleCity(cityKey){
+    if (expandedCities.has(cityKey)) expandedCities.delete(cityKey);
+    else expandedCities.add(cityKey);
+    filterApplicants();
+  }
+
+  function toggleGroup(g){
+    if (expandedGroups.has(g)) expandedGroups.delete(g);
+    else expandedGroups.add(g);
+    filterApplicants();
+  }
+
+  function resetPhotoSlot(url){
+    const slot = document.getElementById('photo-slot');
+    slot.innerHTML = url ? `<img src="${url}">` : '<span class="ph">＋</span>';
+  }
+
+  // Makes sure the family-name suggestions <datalist> includes this value,
+  // even if it was just created mid-edit and hasn't been through a full
+  // updateUI() refresh yet.
+  function ensureGroupOption(g){
+    const dl = document.getElementById('fg-list');
+    const exists = Array.from(dl.options).some(o => o.value === g);
+    if (!exists){
+      const opt = document.createElement('option');
+      opt.value = g;
+      dl.appendChild(opt);
+    }
+  }
+
+  // FEATURE: Family name field — the Group field doubles as the family
+  // name: picking "Family" as the application type relabels it "Family
+  // name" and moves focus straight to it so the name can just be typed in
+  // (no popup). Whatever is typed there is what every family member added
+  // afterward will be filed under.
+  function onAppTypeChange(){
+    const at = document.getElementById('fat').value;
+    const fg2 = document.getElementById('fg2');
+    const addFamilyBtn = document.getElementById('add-family-btn');
+    const inlineWrap = document.getElementById('fg-familyname-inline');
+    if (at === 'Family'){
+      addFamilyBtn.style.display = '';
+      inlineWrap.style.display = '';
+      if (!fg2.value) fg2.focus();
+    } else {
+      addFamilyBtn.style.display = 'none';
+      inlineWrap.style.display = 'none';
+    }
+    updateModalTitle();
+  }
+
+  // FEATURE: Family name is its OWN field — independent from Group. Group
+  // keeps doing what it always did (filtering, chips, exports, the
+  // extension's family-folder view). Family name (#fg2) is a separate,
+  // purely descriptive label shown only when Application type is "Family";
+  // it does NOT get copied into Group and Group does NOT get copied into it.
+  function updateModalTitle(){
+    const at = document.getElementById('fat').value;
+    const titleEl = document.getElementById('modal-title');
+    const base = editIdx >= 0 ? 'Edit applicant' : (at === 'Family' ? 'Add family member' : 'Add applicant');
+    const famName = document.getElementById('fg2').value.trim();
+    titleEl.textContent = (at === 'Family' && famName) ? `${base} — ${famName}` : base;
+  }
+
+  // Opens a fresh, blank applicant form already filed under the given
+  // family group, so the next family member is entered without having
+  // to re-type the family name or re-pick the application type.
+  function addFamilyMember(groupName, destination, familyName){
+    isModalOpen = true;
+    editIdx = -1;
+    originalPassportNo = null;
+    currentPhotoBase64 = null;
+    document.getElementById('modal-title').textContent = 'Add family member';
+    if (groupName) ensureGroupOption(groupName);
+    document.getElementById('fg').value = groupName || '';
+    document.getElementById('fg2').value = familyName || '';
+    document.getElementById('fat').value = 'Family';
+    onAppTypeChange();
+    document.getElementById('fdest').value = destination || 'Spain';
+    ['ff','fl','fp','fd','fb','fi','fa1','fc','fcity','fpc','fph','fgen','fms','fpj','frel','fpid','fped'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('fp').readOnly = false;
+    document.getElementById('fp').style.background = '';
+    onDestinationChange('');
+    document.getElementById('fpj').value = 'Tourism';
+    document.getElementById('frel').value = 'Father';
+    resetPhotoSlot(null);
+    document.getElementById('upload-status').textContent = '';
+    document.getElementById('save-btn').disabled = false;
+    updateMrz();
+    document.getElementById('modal').classList.add('active');
+    setTimeout(() => document.getElementById('ff').focus(), 100);
+  }
+
+  function showAddModal(){
+    isModalOpen = true;
+    editIdx = -1;
+    originalPassportNo = null;
+    currentPhotoBase64 = null;
+    document.getElementById('modal-title').textContent = 'Add applicant';
+    document.getElementById('fg').value = filter === 'all' ? '' : filter;
+    document.getElementById('fg2').value = '';
+    document.getElementById('fat').value = 'Individual';
+    document.getElementById('fdest').value = 'Spain';
+    onAppTypeChange();
+    ['ff','fl','fp','fd','fb','fi','fa1','fc','fcity','fpc','fph','fgen','fms','fpj','frel','fpid','fped'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('fp').readOnly = false;
+    document.getElementById('fp').style.background = '';
+    onDestinationChange('');
+    document.getElementById('fpj').value = 'Tourism';
+    document.getElementById('frel').value = 'Father';
+    resetPhotoSlot(null);
+    document.getElementById('upload-status').textContent = '';
+    document.getElementById('save-btn').disabled = false;
+    updateMrz();
+    onDateOfBirthChange();
+    document.getElementById('modal').classList.add('active');
+    setTimeout(() => document.getElementById('ff').focus(), 100);
+  }
+
+  async function edit(i){
+    const a0 = apps[i];
+    if (a0 && a0.group && !(await ensureGroupUnlocked(a0.group, 'edit this applicant'))) return;
+    isModalOpen = true;
+    editIdx = i;
+    originalPassportNo = apps[i].PassportNo;
+    currentPhotoBase64 = apps[i].photo;
+    const a = apps[i];
+    document.getElementById('modal-title').textContent = 'Edit applicant';
+    document.getElementById('fg').value = a.group || '';
+    document.getElementById('fg2').value = a.FamilyName || '';
+    document.getElementById('fat').value = a.ApplicationType || 'Individual';
+    document.getElementById('fdest').value = a.Destination || 'Spain';
+    onAppTypeChange();
+    onDestinationChange(a.Center || a.City || '');
+    document.getElementById('ff').value = a.FirstName || '';
+    document.getElementById('fl').value = a.LastName || '';
+    document.getElementById('fp').value = a.PassportNo || '';
+    document.getElementById('fp').readOnly = true;
+    document.getElementById('fp').style.background = '#f0f0f0';
+    document.getElementById('fd').value = a.DateOfBirth || '';
+    document.getElementById('fb').value = a.PlaceOfBirth || '';
+    document.getElementById('fi').value = a.IssuePlace || '';
+    document.getElementById('fpid').value = a.PassportValidityDate || '';
+    document.getElementById('fped').value = a.PassportExpiryDate || '';
+    document.getElementById('fa1').value = a.HomeAddressLine1 || '';
+    document.getElementById('fcity').value = a.City || a.Center || '';
+    document.getElementById('fpc').value = a.PostalCode || '';
+    document.getElementById('fgen').value = a.Gender || '';
+    document.getElementById('fms').value = a.MaritalStatus || '';
+    document.getElementById('fpj').value = a.PurposeOfJourney || '';
+    document.getElementById('fmemb').value = a.MemberStateDestination || a.Destination || 'Spain';
+    document.getElementById('frel').value = a.RelationshipWithPrimaryApplicant || '';
+    document.getElementById('fph').value = '';
+    resetPhotoSlot(a.photo);
+    document.getElementById('upload-status').textContent = '';
+    document.getElementById('save-btn').disabled = false;
+    updateMrz();
+    onDateOfBirthChange();
+    document.getElementById('modal').classList.add('active');
+  }
+
+  function closeModal(){
+    isModalOpen = false;
+    document.getElementById('modal').classList.remove('active');
+  }
+
+  document.getElementById('fph').onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const statusEl = document.getElementById('upload-status');
+    statusEl.textContent = 'Processing photo…';
+    try{
+      const compressed = await compressImage(file, 600, 600, 0.92);
+      currentPhotoBase64 = compressed;
+      const sizeKB = Math.round((compressed.length * 3/4)/1024);
+      statusEl.textContent = `Optimized to ~${sizeKB}KB`;
+      resetPhotoSlot(compressed);
+    }catch(err){
+      statusEl.textContent = 'Photo processing failed — try again';
+      currentPhotoBase64 = null;
+    }
+  };
+
+  function compressImage(file, maxWidth, maxHeight, quality){
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          let width = img.width, height = img.height;
+          if (width > height){ if (width > maxWidth){ height *= maxWidth/width; width = maxWidth; } }
+          else { if (height > maxHeight){ width *= maxHeight/height; height = maxHeight; } }
+          canvas.width = width; canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.imageSmoothingEnabled = true;
+          ctx.imageSmoothingQuality = 'high';
+          ctx.drawImage(img, 0, 0, width, height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = reject;
+        img.src = e.target.result;
+      };
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  async function save(continueFamily = false){
+    const saveBtn = document.getElementById('save-btn');
+    const addFamilyBtn = document.getElementById('add-family-btn');
+    const passportVal = document.getElementById('fp').value.trim();
+    const firstVal = document.getElementById('ff').value.trim();
+    const lastVal = document.getElementById('fl').value.trim();
+
+    if (!firstVal || !lastVal || !passportVal){
+      stamp('Missing required fields', 'error');
+      return;
+    }
+    if (editIdx < 0){
+      const duplicate = apps.find(a => a.PassportNo === passportVal);
+      if (duplicate){ stamp('Passport already on file', 'error'); return; }
+    } else if (passportVal !== originalPassportNo){
+      const duplicate = apps.find((a, idx) => idx !== editIdx && a.PassportNo === passportVal);
+      if (duplicate){ stamp('Passport already on file', 'error'); return; }
+    }
+
+    saveBtn.disabled = true;
+    addFamilyBtn.disabled = true;
+    saveBtn.textContent = 'Saving…';
+
+    // Passport number can now be changed during edit too — the server's
+    // PUT /api/applicants/:originalPassportNo route already supports this
+    // (it renames the record's identity atomically).
+    // FEATURE: Date added — recorded once, the moment an applicant is first
+    // created, and never touched again on edits (unlike _updatedAt, which
+    // bumps on every save). Older records that predate this feature won't
+    // have it, so the list falls back to _updatedAt for those rather than
+    // showing a blank date.
+    const existingCreatedAt = editIdx >= 0 ? (apps[editIdx]._createdAt || apps[editIdx]._updatedAt) : null;
+
+    const record = {
+      group: document.getElementById('fg').value.trim(),
+      FamilyName: document.getElementById('fat').value === 'Family' ? document.getElementById('fg2').value.trim() : '',
+      ApplicationType: document.getElementById('fat').value,
+      Destination: document.getElementById('fdest').value,
+      FirstName: firstVal,
+      LastName: lastVal,
+      PassportNo: passportVal,
+      DateOfBirth: document.getElementById('fd').value,
+      PlaceOfBirth: document.getElementById('fb').value,
+      IssuePlace: document.getElementById('fi').value,
+      PassportValidityDate: document.getElementById('fpid').value,
+      PassportExpiryDate: document.getElementById('fped').value,
+      HomeAddressLine1: document.getElementById('fa1').value.trim(),
+      Center: document.getElementById('fc').value,
+      City: document.getElementById('fcity').value.trim(),
+      PostalCode: document.getElementById('fpc').value.trim(),
+      Gender: document.getElementById('fgen').value,
+      MaritalStatus: document.getElementById('fms').value,
+      PurposeOfJourney: document.getElementById('fpj').value,
+      MemberStateDestination: document.getElementById('fmemb').value,
+      RelationshipWithPrimaryApplicant: document.getElementById('frel').value.trim(),
+      photo: currentPhotoBase64,
+      _createdAt: existingCreatedAt || Date.now(),
+      _updatedAt: Date.now(),
+      deviceId: dashboardActorId
+    };
+
+    try{
+      if (editIdx >= 0){
+        // FIX: atomic update targeted at the ORIGINAL passport number.
+        // This edits the one record in place — it cannot create a duplicate.
+        const r = await fetch(API + '/api/applicants/' + encodeURIComponent(originalPassportNo), {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(record)
+        });
+        if (r.status === 404){
+          // FIX: fallback for a server that hasn't been redeployed with the
+          // new PUT route yet — still edits in place via the full-list sync,
+          // since PassportNo is unchanged this cannot create a duplicate.
+          apps[editIdx] = record;
+          await sync();
+        } else if (!r.ok){
+          const err = await r.json().catch(() => ({}));
+          throw new Error(err.error || 'Update failed');
+        } else {
+          const d = await r.json();
+          apps = d.data.applicants;
+          selectedForDelete.clear();
+          groups = d.data.groups;
+          pingForceSync(); // FIX: this atomic PUT never bumped forceSyncTimestamp before
+        }
+      } else {
+        apps.push(record);
+        if (record.group && !groups.includes(record.group)) groups.push(record.group);
+        await sync();
+      }
+      updateUI();
+
+      // FEATURE: Family name field — the dedicated "+ Add another family
+      // member" button saves the current member and jumps straight to a
+      // blank form for the next one, no confirm prompt needed since the
+      // click itself was the explicit request.
+      if (continueFamily){
+        stamp('Saved');
+        addFamilyMember(record.group, record.Destination, record.FamilyName);
+        return;
+      }
+
+      // The regular Save button still offers to continue the family so
+      // people who didn't notice the dedicated button aren't stuck
+      // re-entering the family name for every member.
+      if (record.ApplicationType === 'Family' && editIdx < 0){
+        stamp('Saved');
+        const groupLabel = record.FamilyName || record.group || 'this family';
+        const addAnother = confirm(`Saved. Add another family member to "${groupLabel}"?`);
+        if (addAnother){
+          addFamilyMember(record.group, record.Destination, record.FamilyName);
+          return;
+        }
+      } else {
+        stamp('Saved');
+      }
+      closeModal();
+    }catch(e){
+      stamp(e.message || 'Save failed', 'error');
+    }finally{
+      saveBtn.disabled = false;
+      addFamilyBtn.disabled = false;
+      saveBtn.textContent = 'Save applicant';
+    }
+  }
+
+  function downloadPhoto(i){
+    const a = apps[i];
+    if (!a || !a.photo){ stamp('No photo on file', 'error'); return; }
+    const match = /^data:image\/(\w+);base64,/.exec(a.photo);
+    const ext = match ? match[1].replace('jpeg','jpg') : 'jpg';
+    const safeName = [a.FirstName, a.LastName].filter(Boolean).join('_').replace(/[^a-zA-Z0-9_-]/g, '') || 'applicant';
+    const passport = (a.PassportNo || '').replace(/[^a-zA-Z0-9_-]/g, '');
+    const filename = `${safeName}${passport ? '_' + passport : ''}.${ext}`;
+    const l = document.createElement('a');
+    l.href = a.photo;
+    l.download = filename;
+    document.body.appendChild(l);
+    l.click();
+    l.remove();
+    stamp('Photo downloaded');
+  }
+
+  // Press-and-hold + Enter engine, used for every deletion action in
+  // the app (single applicant, delete all, delete group, delete
+  // selected). No fixed duration: you just keep the mouse/finger down
+  // (mousedown/touchstart) on the element, and while it's still held,
+  // press Enter to actually run the action. Letting go before Enter
+  // (mouseup/mouseleave/touchend) cancels immediately with no effect.
+  // Pressing Enter with nothing held down also does nothing. So a
+  // delete only ever happens with both at once: hold + Enter.
+  let holdCell = null, holdAction = null;
+
+  function startHold(el, action){
+    if (holdCell) return; // already holding something else
+    holdCell = el;
+    holdAction = action;
+    holdCell.classList.add('holding');
+  }
+
+  function holdEnd(){
+    if (holdCell){
+      holdCell.classList.remove('holding');
+      holdCell = null;
+    }
+    holdAction = null;
+  }
+
+  // Enter runs whatever is currently being held, then releases the hold.
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && holdCell && holdAction){
+      const act = holdAction;
+      holdEnd();
+      act();
+    }
+  });
+
+  function holdStart(evt, i){
+    startHold(evt.currentTarget, () => del(i, true));
+  }
+
+  function holdDeleteAllStart(evt){
+    startHold(evt.currentTarget, () => deleteAll(true));
+  }
+
+  function holdSelectedStart(evt){
+    startHold(evt.currentTarget, () => deleteSelected(true));
+  }
+
+  // ── Multi-select for bulk delete ─────────────────────────────────────
+  // Checking boxes on several rows doesn't delete anything by itself —
+  // it just builds up a selection. Nothing is removed until the
+  // "Delete selected" button is held down for the full 10 seconds, same
+  // engine as every other delete in the app.
+  function toggleSelect(idx){
+    if (selectedForDelete.has(idx)) selectedForDelete.delete(idx);
+    else selectedForDelete.add(idx);
+    updateSelectedButton();
+  }
+
+  function toggleSelectAll(){
+    const cbs = document.querySelectorAll('#tbody .select-cb');
+    const allChecked = Array.from(cbs).every(cb => selectedForDelete.has(Number(cb.dataset.idx)));
+    cbs.forEach(cb => {
+      const idx = Number(cb.dataset.idx);
+      if (allChecked) selectedForDelete.delete(idx);
+      else selectedForDelete.add(idx);
+    });
+    filterApplicants(); // re-render so every checkbox reflects the new state
+  }
+
+  function updateSelectedButton(){
+    const btn = document.getElementById('delete-selected-btn');
+    const label = document.getElementById('delete-selected-label');
+    const count = selectedForDelete.size;
+    if (!btn || !label) return;
+    label.textContent = `Delete selected (${count})`;
+    btn.style.display = count > 0 ? 'inline-flex' : 'none';
+
+    const selectAllCb = document.getElementById('select-all-cb');
+    if (selectAllCb){
+      const visibleIdx = Array.from(document.querySelectorAll('#tbody .select-cb')).map(cb => Number(cb.dataset.idx));
+      const allSelected = visibleIdx.length > 0 && visibleIdx.every(i => selectedForDelete.has(i));
+      const someSelected = visibleIdx.some(i => selectedForDelete.has(i));
+      selectAllCb.checked = allSelected;
+      selectAllCb.indeterminate = someSelected && !allSelected;
+    }
+  }
+
+  async function deleteSelected(skipConfirm){
+    const indices = Array.from(selectedForDelete);
+    if (!indices.length) return;
+    const targets = indices.map(i => apps[i]).filter(Boolean);
+    const passportNumbers = targets.map(a => a.PassportNo).filter(Boolean);
+    if (!passportNumbers.length){ stamp('Selected records have no passport number', 'error'); return; }
+
+    // Selected applicants may span several groups — unlock every
+    // protected one before deleting anything.
+    const involvedGroups = [...new Set(targets.map(a => a.group).filter(Boolean))];
+    for (const g of involvedGroups){
+      if (!(await ensureGroupUnlocked(g, `delete applicant(s) in "${g}"`))) return;
+    }
+
+    if (!skipConfirm && !confirm(`Delete ${passportNumbers.length} selected applicant(s)?`)) return;
+
+    const savedRecords = targets.map(a => ({ ...a }));
+    try{
+      const r = await fetch(API + '/api/applicants/bulk-delete', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ passportNumbers })
+      });
+      if (!r.ok) throw new Error('Server error');
+      const d = await r.json();
+      apps = d.data.applicants; groups = d.data.groups;
+      selectedForDelete.clear();
+      updateUI();
+      pingForceSync();
+      stamp(`Deleted ${passportNumbers.length} applicant(s)`, 'success', () => restoreAll(savedRecords, groups));
+    }catch(e){ stamp('Bulk delete failed', 'error'); }
+  }
+
+  async function del(i, skipConfirm){
+    const group = apps[i] && apps[i].group;
+    if (group && !(await ensureGroupUnlocked(group, 'delete this applicant'))) return;
+    if (!skipConfirm && !confirm('Delete this applicant?')) return;
+    const passportNo = apps[i].PassportNo;
+    if (!passportNo){ stamp('No passport number on record', 'error'); return; }
+    const deletedRecord = { ...apps[i] };
+    try{
+      const r = await fetch(API + '/api/applicants/' + encodeURIComponent(passportNo), { method: 'DELETE' });
+      if (!r.ok) throw new Error('Server error');
+      const d = await r.json();
+      apps = d.data.applicants; groups = d.data.groups;
+      selectedForDelete.clear();
+      updateUI();
+      pingForceSync();
+      stamp('Deleted', 'success', () => restoreApplicant(deletedRecord));
+    }catch(e){ stamp('Delete failed', 'error'); }
+  }
+
+  // FEATURE: Undo for deletions. Each delete path keeps a copy of what it
+  // removed and hands it to stamp()'s Undo button. Restoring goes through
+  // PUT (which creates the record again if it's missing — see server.js)
+  // for a single applicant, or a full sync for bulk restores, so undoing
+  // can never create a duplicate even if something else changed meanwhile.
+  async function restoreApplicant(record){
+    try{
+      const r = await fetch(API + '/api/applicants/' + encodeURIComponent(record.PassportNo), {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...record, _updatedAt: Date.now() })
+      });
+      if (!r.ok) throw new Error('Restore failed');
+      const d = await r.json();
+      apps = d.data.applicants; groups = d.data.groups;
+      selectedForDelete.clear();
+      updateUI();
+      pingForceSync();
+      stamp('Restored');
+    }catch(e){ stamp('Restore failed', 'error'); }
+  }
+
+  async function deleteAll(skipConfirm){
+    for (const g of protectedGroups){
+      if (!(await ensureGroupUnlocked(g, `delete everything (including group "${g}")`))) return;
+    }
+    if (!skipConfirm && !confirm('Delete ALL applicants? This cannot be undone.')) return;
+    const savedApps = apps.map(a => ({ ...a }));
+    const savedGroups = groups.slice();
+    try{
+      await fetch(API + '/api/applicants', { method: 'DELETE' });
+      apps = []; groups = []; filter = 'all';
+      updateUI();
+      pingForceSync();
+      stamp('Manifest cleared', 'success', () => restoreAll(savedApps, savedGroups));
+    }catch(e){ stamp('Delete failed', 'error'); }
+  }
+
+  async function restoreAll(savedApps, savedGroups){
+    if (!savedApps.length && !savedGroups.length) return;
+    apps = savedApps.map(a => ({ ...a, _updatedAt: Date.now() }));
+    groups = savedGroups.slice();
+    try{
+      await sync();
+      stamp('Restored');
+    }catch(e){ stamp('Restore failed', 'error'); }
+  }
+
+  async function deleteGroup(groupName, skipConfirm){
+    if (!(await ensureGroupUnlocked(groupName, 'delete it'))) return;
+    const count = apps.filter(a => a.group === groupName).length;
+    if (!skipConfirm && !confirm(`Delete group "${groupName}" and ${count} applicant(s)?`)) return;
+    const savedMembers = apps.filter(a => a.group === groupName).map(a => ({ ...a }));
+    try{
+      const r = await fetch(API + '/api/applicants/group/' + encodeURIComponent(groupName), { method: 'DELETE' });
+      if (!r.ok) throw new Error('Server error');
+      const d = await r.json();
+      apps = d.data.applicants; groups = d.data.groups;
+      protectedGroups.delete(groupName);
+      selectedForDelete.clear();
+      if (filter === groupName) filter = 'all';
+      updateUI();
+      pingForceSync();
+      stamp('Group deleted', 'success', () => restoreGroup(groupName, savedMembers));
+    }catch(e){ stamp('Delete failed', 'error'); }
+  }
+
+  async function restoreGroup(groupName, savedMembers){
+    if (!savedMembers.length) return;
+    const now = Date.now();
+    savedMembers.forEach(a => { a._updatedAt = now; });
+    apps = apps.concat(savedMembers);
+    if (!groups.includes(groupName)) groups.push(groupName);
+    try{
+      await sync();
+      stamp('Group restored');
+    }catch(e){ stamp('Restore failed', 'error'); }
+  }
+
+  async function showAddGroupModal(){
+    const name = prompt('New group name:');
+    if (!name || !name.trim()) return;
+    const g = name.trim();
+    if (groups.includes(g)){ stamp('Group already exists', 'error'); return; }
+    groups.push(g);
+    await sync();
+    filter = g;
+    stamp('Group created');
+    updateUI();
+  }
+
+  // FEATURE: Rename a group in place. Every applicant currently in the old
+  // group is moved to the new name (bumping _updatedAt so the change wins
+  // on sync), then the stale old group entry is purged from the server.
+  // This two-step order matters: the sync endpoint only ever ADDS group
+  // names (union merge, so a stale client never accidentally deletes a
+  // group), so the old name would otherwise linger forever as an empty
+  // ghost entry. Deleting it is only safe to do AFTER the rename has been
+  // pushed, once no applicant references the old name anymore. If the new
+  // name matches an existing group, this naturally merges the two.
+  async function renameGroup(oldName){
+    if (!(await ensureGroupUnlocked(oldName, 'rename it'))) return;
+    const input = prompt(`Rename group "${oldName}" to:`, oldName);
+    if (input === null) return;
+    const newName = input.trim();
+    if (!newName){ stamp('Group name cannot be empty', 'error'); return; }
+    if (newName === oldName) return;
+    const merging = groups.includes(newName);
+    if (!merging || newName !== oldName){
+      if (merging && !confirm(`A group named "${newName}" already exists. Merge "${oldName}" into it?`)) return;
+    }
+    const wasProtected = protectedGroups.has(oldName) && !protectedGroups.has(newName);
+    const now = Date.now();
+    apps.forEach(a => { if (a.group === oldName){ a.group = newName; a._updatedAt = now; } });
+    groups = groups.filter(g => g !== oldName);
+    if (!groups.includes(newName)) groups.push(newName);
+    try{
+      await sync();
+      const r = await fetch(API + '/api/applicants/group/' + encodeURIComponent(oldName), { method: 'DELETE' });
+      if (r.ok){
+        const d = await r.json();
+        apps = d.data.applicants; groups = d.data.groups;
+        selectedForDelete.clear();
+      }
+      protectedGroups.delete(oldName); // the delete call above also wiped its server-side password entry
+      if (filter === oldName) filter = newName;
+      updateUI();
+      pingForceSync();
+      stamp(merging ? `Merged into group "${newName}"` : 'Group renamed');
+      if (wasProtected){
+        stamp('Please re-set the password for the renamed group');
+        await setGroupPassword(newName, null);
+        updateUI();
+      }
+    }catch(e){
+      stamp('Rename failed', 'error');
+    }
+  }
+
+  // FIX: every mutation below saves correctly on the server, but only
+  // /api/force-sync actually wakes up extensions' 2-second polling loop.
+  // Without this, an edit/delete/rename only reaches installed extensions
+  // on their next full 5-minute auto-sync — which looked like "nothing
+  // refreshed" even though the dashboard itself was already correct.
+  function pingForceSync(){
+    fetch(API + '/api/force-sync', { method: 'POST' }).catch(() => {});
+  }
+
+  async function sync(){
+    const r = await fetch(API + '/api/applicants/sync', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ applicants: apps, groups, deviceId: dashboardActorId })
+    });
+    if (!r.ok) throw new Error('Sync failed');
+    const d = await r.json();
+    apps = d.data.applicants; groups = d.data.groups;
+    selectedForDelete.clear();
+    updateUI();
+    pingForceSync();
+  }
+
+  async function syncNow(){
+    try{
+      await loadData();
+      await fetch(API + '/api/force-sync', { method: 'POST' }).catch(() => {});
+      stamp('Synced');
+    }catch(e){ stamp('Sync failed', 'error'); }
+  }
+
+  function exportData(){
+    const s = JSON.stringify({ applicants: apps, groups }, null, 2);
+    const b = new Blob([s], { type: 'application/json' });
+    const u = URL.createObjectURL(b);
+    const l = document.createElement('a');
+    l.href = u; l.download = `manifest-${new Date().toISOString().split('T')[0]}.json`;
+    l.click();
+    URL.revokeObjectURL(u);
+    stamp('Exported');
+  }
+
+  // Export — one group only. Used by the 💾 button next to each group's
+  // name in the sidebar. Only that group's applicants go in the file.
+  function exportGroupData(groupName){
+    const groupApplicants = apps.filter(a => (a.group || 'No Group') === groupName);
+    const payload = { applicants: groupApplicants, groups: [groupName] };
+    const s = JSON.stringify(payload, null, 2);
+    const b = new Blob([s], { type: 'application/json' });
+    const u = URL.createObjectURL(b);
+    const l = document.createElement('a');
+    l.href = u;
+    const safeName = groupName.replace(/[^a-z0-9\u0600-\u06FF_-]+/gi, '_');
+    l.download = `manifest-${safeName}-${new Date().toISOString().split('T')[0]}.json`;
+    l.click();
+    URL.revokeObjectURL(u);
+    stamp(`Exported "${groupName}"`);
+  }
+
+  // Import — one group only. Used by the 📤 button next to each group's
+  // name. Every applicant in the chosen file is forced into this group
+  // (regardless of what group the file itself carries), so it can never
+  // spill into or overwrite another group's data.
+  function importGroupData(groupName){
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = 'application/json';
+    inp.onchange = async e => {
+      const f = e.target.files[0];
+      if (!f) return;
+      const r = new FileReader();
+      r.onload = async ev => {
+        try{
+          const d = JSON.parse(ev.target.result);
+          if (!d.applicants || !Array.isArray(d.applicants)) throw new Error('Invalid format');
+          const now = Date.now();
+          // FIX: always stamp a FRESH _updatedAt (never reuse the file's own
+          // old one) and mark _forceRestore so this deliberate restore beats
+          // a server-side deletion tombstone — same fix as the extension's
+          // import. Reusing the file's old timestamp guaranteed the server
+          // would reject a restore of anything that had been deleted, since
+          // that old timestamp is always older than the tombstone.
+          const incoming = d.applicants.map(a => ({ ...a, group: groupName, _updatedAt: now, _forceRestore: true }));
+          const existingByPassport = new Map(
+            apps.filter(a => (a.group || 'No Group') === groupName).map(a => [a.PassportNo, a])
+          );
+          let restoredCount = 0, addedCount = 0;
+          for (const a of incoming) {
+            if (a.PassportNo && existingByPassport.has(a.PassportNo)) {
+              const idx = apps.indexOf(existingByPassport.get(a.PassportNo));
+              if (idx >= 0) apps[idx] = a;
+              restoredCount++;
+            } else {
+              apps.push(a);
+              addedCount++;
+            }
+          }
+          if (!groups.includes(groupName)) groups.push(groupName);
+          await sync();
+          stamp(`${addedCount} added + ${restoredCount} restored into "${groupName}"`);
+        }catch(e){ stamp('Import failed', 'error'); }
+      };
+      r.readAsText(f);
+    };
+    inp.click();
+  }
+
+  // FEATURE: Export PDF — builds a clean, print-friendly table of whatever
+  // is currently visible (respects the active search/group filter, same as
+  // the on-screen list) in a new tab and opens the browser's print dialog,
+  // where "Save as PDF" is one of the standard destinations. No extra PDF
+  // library needed, and the result always matches what's on screen.
+  // FIX: was one flat list in whatever order `apps` happened to be in —
+  // Portugal and Spain applicants (and different centers) ended up mixed
+  // together. Now grouped the same way as the on-screen tree: Destination
+  // first (alphabetical, so Portugal / Spain / etc. are always separate
+  // blocks), then Center/City within each destination — each with its own
+  // section header — so every export matches what's on screen.
+  function exportPDF(){
+    const list = getFilteredApplicants();
+    if (!list.length){ stamp('No applicants to export', 'error'); return; }
+
+    const scopeLabel = filter === 'all' ? 'All applicants' : `Group: ${filter}`;
+
+    const byDest = groupByKey(list, a => a.Destination || 'Unspecified destination');
+    const destKeys = Array.from(byDest.keys()).sort((a, b) => a.localeCompare(b));
+
+    let counter = 0;
+    let sections = '';
+    destKeys.forEach(dest => {
+      const destApps = byDest.get(dest);
+      const byCity = groupByKey(destApps, a => a.City || a.Center || 'Unspecified center');
+      const cityKeys = Array.from(byCity.keys()).sort((a, b) => a.localeCompare(b));
+
+      sections += `<h2 class="dest-heading">${escapeHtml(dest)} — ${destApps.length} applicant${destApps.length===1?'':'s'}</h2>`;
+
+      cityKeys.forEach(city => {
+        const cityApps = byCity.get(city);
+        const rows = cityApps.map(a => {
+          counter++;
+          return `
+      <tr>
+        <td>${counter}</td>
+        <td>${escapeHtml(a.FirstName || '')} ${escapeHtml(a.LastName || '')}</td>
+        <td>${escapeHtml(a.PassportNo || '')}</td>
+        <td>${escapeHtml(a.DateOfBirth || '')}</td>
+        <td>${escapeHtml(a.PlaceOfBirth || '')}</td>
+        <td>${escapeHtml(a.group || '')}</td>
+        <td>${escapeHtml(a.FamilyName || '')}</td>
+      </tr>`;
+        }).join('');
+
+        sections += `
+        <h3 class="city-heading">${escapeHtml(city)} — ${cityApps.length} applicant${cityApps.length===1?'':'s'}</h3>
+        <table>
+          <thead><tr><th>#</th><th>Name</th><th>Passport No.</th><th>Date of birth</th><th>Place of birth</th><th>Group</th><th>Family</th></tr></thead>
+          <tbody>${rows}</tbody>
+        </table>`;
+      });
+    });
+
+    const html = `<!DOCTYPE html>
+      <html><head><meta charset="utf-8"><title>Manifest export</title>
+      <style>
+        body{font-family:Arial,Helvetica,sans-serif;color:#161B2C;margin:32px;}
+        h1{font-size:18px;margin:0 0 2px;}
+        .meta{font-size:12px;color:#666;margin-bottom:18px;}
+        .dest-heading{font-size:15px;margin:22px 0 6px;padding-bottom:4px;border-bottom:2px solid #1B2440;page-break-after:avoid;}
+        .dest-heading:first-of-type{margin-top:0;}
+        .city-heading{font-size:12.5px;margin:14px 0 4px;color:#1B2440;page-break-after:avoid;}
+        table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:4px;}
+        th,td{border:1px solid #ccc;padding:6px 8px;text-align:left;}
+        th{background:#1B2440;color:#fff;text-transform:uppercase;font-size:10.5px;letter-spacing:0.4px;}
+        tr:nth-child(even){background:#f7f7f7;}
+        @media print{ body{margin:12mm;} .dest-heading{page-break-before:auto;} }
+      </style></head>
+      <body>
+        <h1>Applicant manifest</h1>
+        <div class="meta">${escapeHtml(scopeLabel)} — ${list.length} record${list.length===1?'':'s'} — generated ${new Date().toLocaleString()}</div>
+        ${sections}
+      </body></html>`;
+
+    const win = window.open('', '_blank');
+    if (!win){ stamp('Pop-up blocked — allow pop-ups to export PDF', 'error'); return; }
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+    win.focus();
+    setTimeout(() => win.print(), 300);
+  }
+
+  // Makes a string safe to use as a folder/file name (strips path separators
+  // and other characters that break filesystems), and falls back to a
+  // sensible default if the result would be empty.
+  function sanitizeFolderName(name, fallback){
+    const cleaned = (name || '').toString().trim().replace(/[\\/:*?"<>|]+/g, '-').replace(/\s+/g, ' ').slice(0, 80);
+    return cleaned || fallback || 'Unnamed';
+  }
+
+  // FEATURE: Export by folder — builds a ZIP with a top-level folder per
+  // destination (Spain / Portugal / any other value / Unspecified), so the
+  // Spanish and Portuguese entities are always kept apart. Inside each
+  // destination folder, every family gets its own subfolder (named after
+  // the family/group) containing a JSON file and photo for each member.
+  // Individual (non-family) applicants get their own personal subfolder too,
+  // so nothing is left out of the structure.
+  async function exportByFolder(){
+    if (typeof JSZip === 'undefined'){ stamp('ZIP library failed to load', 'error'); return; }
+    if (!apps.length){ stamp('No applicants to export', 'error'); return; }
+
+    const zip = new JSZip();
+
+    apps.forEach(a => {
+      const destName = sanitizeFolderName(a.Destination, 'Unspecified destination');
+      const destFolder = zip.folder(destName);
+
+      // FIX: each center now gets its own subfolder inside the destination
+      // folder too, instead of every center's families being dumped
+      // together straight under the destination.
+      const centerName = sanitizeFolderName(a.City || a.Center, 'Unspecified center');
+      const centerFolder = destFolder.folder(centerName);
+
+      const isFamily = a.ApplicationType === 'Family' && a.group;
+      const subFolderName = isFamily
+        ? sanitizeFolderName(a.group, 'Family')
+        : sanitizeFolderName(`${a.FirstName || ''} ${a.LastName || ''}`.trim(), a.PassportNo || 'Applicant');
+      const subFolder = centerFolder.folder(subFolderName);
+
+      const safeFileBase = sanitizeFolderName(`${a.FirstName || ''}_${a.LastName || ''}`.trim(), a.PassportNo || 'applicant');
+
+      // Applicant data as JSON (photo pulled out and saved as its own image file)
+      const { photo, ...dataOnly } = a;
+      subFolder.file(`${safeFileBase}.json`, JSON.stringify(dataOnly, null, 2));
+
+      if (photo){
+        const match = /^data:image\/(\w+);base64,(.*)$/.exec(photo);
+        if (match){
+          const ext = match[1].replace('jpeg', 'jpg');
+          subFolder.file(`${safeFileBase}_photo.${ext}`, match[2], { base64: true });
+        }
+      }
+    });
+
+    try{
+      const blob = await zip.generateAsync({ type: 'blob' });
+      const u = URL.createObjectURL(blob);
+      const l = document.createElement('a');
+      l.href = u; l.download = `manifest-by-destination-${new Date().toISOString().split('T')[0]}.zip`;
+      document.body.appendChild(l);
+      l.click();
+      l.remove();
+      URL.revokeObjectURL(u);
+      stamp('Exported by folder');
+    }catch(e){
+      stamp('Folder export failed', 'error');
+    }
+  }
+
+  async function importData(){
+    const inp = document.createElement('input');
+    inp.type = 'file'; inp.accept = 'application/json';
+    inp.onchange = async e => {
+      const f = e.target.files[0];
+      if (!f) return;
+      const r = new FileReader();
+      r.onload = async ev => {
+        try{
+          const d = JSON.parse(ev.target.result);
+          if (!d.applicants || !Array.isArray(d.applicants)) throw new Error('Invalid format');
+          const now = Date.now();
+          // FIX: same as importGroupData — fresh _updatedAt + _forceRestore
+          // so a restore of a deleted applicant actually survives the
+          // server's tombstone check instead of silently disappearing on
+          // the very next sync.
+          const incoming = d.applicants.map(a => ({ ...a, _updatedAt: now, _forceRestore: true }));
+          const existingByPassport = new Map(apps.map(a => [a.PassportNo, a]));
+          let restoredCount = 0, addedCount = 0;
+          for (const a of incoming) {
+            if (a.PassportNo && existingByPassport.has(a.PassportNo)) {
+              const idx = apps.indexOf(existingByPassport.get(a.PassportNo));
+              if (idx >= 0) apps[idx] = a;
+              restoredCount++;
+            } else {
+              apps.push(a);
+              addedCount++;
+            }
+          }
+          if (d.groups && Array.isArray(d.groups)){
+            d.groups.forEach(g => { if (!groups.includes(g)) groups.push(g); });
+          }
+          await sync();
+          stamp(`${addedCount} added + ${restoredCount} restored`);
+        }catch(e){ stamp('Import failed', 'error'); }
+      };
+      r.readAsText(f);
+    };
+    inp.click();
+  }
+
+  // ===== Device licenses panel =====
+  // One row per device that has ever checked in (or that was hand-added).
+  // Activate/deactivate + set an expiry date per device — a device stays
+  // locked out of the extension until you explicitly turn it on here.
+  // This panel controls who gets to use the product at all, so it's gated
+  // behind the same admin/master password as Import (cached in memory only
+  // for this tab session, never stored).
+  let licensesCache = [];
+  let licensesPassword = null;
+
+  async function unlockLicenses(){
+    if (licensesPassword) return true; // already unlocked this session
+    if (!adminProtected){
+      alert('Set an admin password first (🔑 button) — Licenses requires one before it can be used.');
+      return false;
+    }
+    for (let attempt = 0; attempt < 3; attempt++){
+      const pw = prompt('Enter the admin password to open Licenses:');
+      if (pw === null) return false;
+      try{
+        const r = await fetch(API + '/api/admin/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ password: pw })
+        });
+        const d = await r.json();
+        if (d.ok){ licensesPassword = pw; return true; }
+      }catch(e){ /* fall through to retry */ }
+      stamp('Wrong password', 'error');
+    }
+    return false;
+  }
+
+  async function openLicensesModal(){
+    if (!(await unlockLicenses())) return;
+    document.getElementById('licenses-modal').classList.add('active');
+    await loadLicenses();
+  }
+
+  function closeLicensesModal(){
+    document.getElementById('licenses-modal').classList.remove('active');
+  }
+
+  function licenseStatusInfo(lic){
+    const now = Date.now();
+    const expired = lic.expiresAt != null && lic.expiresAt < now;
+    if (!lic.active) return { cls: 'inactive', text: 'Inactive' };
+    if (expired) return { cls: 'expired', text: 'Expired' };
+    return { cls: 'active', text: 'Active' };
+  }
+
+  function toDateInputValue(ms){
+    if (!ms) return '';
+    const d = new Date(ms);
+    return d.toISOString().slice(0, 10);
+  }
+
+  async function loadLicenses(){
+    const tbody = document.getElementById('licenses-tbody');
+    try{
+      const r = await fetch(API + '/api/admin/licenses', {
+        headers: { 'x-admin-password': licensesPassword || '' }
+      });
+      if (r.status === 403){ licensesPassword = null; stamp('Wrong password', 'error'); closeLicensesModal(); return; }
+      const d = await r.json();
+      licensesCache = d.licenses || [];
+      // Flagged (invalid-serial) devices float to the top so they're seen first
+      licensesCache.sort((a, b) => (b.flagged ? 1 : 0) - (a.flagged ? 1 : 0) || (b.lastSeen || 0) - (a.lastSeen || 0));
+    }catch(e){
+      tbody.innerHTML = '<tr><td colspan="6" class="lic-empty">Could not reach server</td></tr>';
+      return;
+    }
+    renderLicensesTable();
+    refreshLicenseFlagDot();
+  }
+
+  function renderLicensesTable(){
+    const tbody = document.getElementById('licenses-tbody');
+    const countEl = document.getElementById('licenses-count');
+    countEl.textContent = `${licensesCache.length} device(s)`;
+
+    if (licensesCache.length === 0){
+      tbody.innerHTML = '<tr><td colspan="6" class="lic-empty">No devices have checked in yet</td></tr>';
+      return;
+    }
+
+    tbody.innerHTML = licensesCache.map(lic => {
+      const info = licenseStatusInfo(lic);
+      const lastSeen = lic.lastSeen ? new Date(lic.lastSeen).toLocaleString() : '—';
+      const shortId = lic.deviceId.length > 18 ? lic.deviceId.slice(0, 8) + '…' + lic.deviceId.slice(-6) : lic.deviceId;
+      const flagLabel = lic.flagReason === 'used_on_another_device'
+        ? 'used on another device without permission — blocked'
+        : 'invalid serial';
+      const flagNote = lic.flagged
+        ? `<span class="lic-flag-note">🚫 ${lic.flagCount > 1 ? lic.flagCount + '× ' : ''}${flagLabel}${lic.lastFlaggedAt ? ' · ' + new Date(lic.lastFlaggedAt).toLocaleString() : ''}</span>`
+        : '';
+      const sessionNote = (!lic.flagged && lic.instanceSwitches)
+        ? `<span class="lic-session-note">🔀 switched browser/PC ${lic.instanceSwitches}×${lic.activeInstanceSeenAt ? ' · active since ' + new Date(lic.activeInstanceSeenAt).toLocaleString() : ''}</span>`
+        : '';
+      const unflagBtn = lic.flagged
+        ? `<button class="lic-btn unflag" onclick="unflagLicenseEntry('${encodeURIComponent(lic.deviceId)}')">🚩 Unflag</button>`
+        : '';
+      // Only relevant for the "used on another device" case: instead of
+      // restoring the original device, hand the license to whoever tries
+      // to claim it next (e.g. the user really did switch to a new PC).
+      const resetLockBtn = (lic.flagReason === 'used_on_another_device' && lic.activeInstanceId)
+        ? `<button class="lic-btn" onclick="resetLicenseLock('${encodeURIComponent(lic.deviceId)}')" title="Let a new device claim this serial instead of restoring the original one">🔓 Allow new device</button>`
+        : '';
+      return `
+        <tr data-device="${encodeURIComponent(lic.deviceId)}"${lic.flagged ? ' class="lic-row-flagged"' : ''}>
+          <td><input class="lic-label-input" value="${(lic.label || '').replace(/"/g,'&quot;')}" placeholder="Unlabeled device" onchange="setLicenseLabel('${encodeURIComponent(lic.deviceId)}', this.value)"></td>
+          <td><span class="lic-device-id" title="Click to copy: ${lic.deviceId}" onclick="copyDeviceId('${lic.deviceId.replace(/'/g,"\\'")}')">${shortId}</span>${flagNote}${sessionNote}</td>
+          <td><span class="lic-badge ${info.cls}">${info.text}</span>${lic.flagged ? ' <span class="lic-badge flagged">⚠ Flagged</span>' : ''}</td>
+          <td>
+            <input type="date" class="lic-expiry-input" value="${toDateInputValue(lic.expiresAt)}" onchange="setLicenseExpiry('${encodeURIComponent(lic.deviceId)}', this.value)">
+          </td>
+          <td style="color:var(--ink-faint);font-size:11.5px;">${lastSeen}</td>
+          <td>
+            <div class="lic-row-actions">
+              <button class="lic-btn ${lic.active ? 'toggle-on' : 'toggle-off'}" onclick="toggleLicenseActive('${encodeURIComponent(lic.deviceId)}', ${!lic.active})">${lic.active ? 'Deactivate' : 'Activate'}</button>
+              <button class="lic-btn" onclick="extendLicense('${encodeURIComponent(lic.deviceId)}', 30)">+30d</button>
+              <button class="lic-btn" onclick="extendLicense('${encodeURIComponent(lic.deviceId)}', 365)">+1y</button>
+              <button class="lic-btn" onclick="clearLicenseExpiry('${encodeURIComponent(lic.deviceId)}')">No expiry</button>
+              ${resetLockBtn}
+              ${unflagBtn}
+              <button class="lic-btn danger" onclick="deleteLicenseEntry('${encodeURIComponent(lic.deviceId)}')">Delete</button>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+
+  async function patchLicense(deviceIdEncoded, patch){
+    const deviceId = decodeURIComponent(deviceIdEncoded);
+    try{
+      const r = await fetch(API + '/api/admin/licenses/' + encodeURIComponent(deviceId), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'x-admin-password': licensesPassword || '' },
+        body: JSON.stringify(patch)
+      });
+      if (!r.ok) throw new Error('request failed');
+      const d = await r.json();
+      const idx = licensesCache.findIndex(l => l.deviceId === deviceId);
+      if (idx >= 0) licensesCache[idx] = d.license; else licensesCache.push(d.license);
+      renderLicensesTable();
+    }catch(e){
+      stamp('Could not update license', 'error');
+      await loadLicenses();
+    }
+  }
+
+  function toggleLicenseActive(deviceIdEncoded, newActive){
+    patchLicense(deviceIdEncoded, { active: newActive });
+    stamp(newActive ? 'Device activated' : 'Device deactivated');
+  }
+
+  function setLicenseLabel(deviceIdEncoded, label){
+    patchLicense(deviceIdEncoded, { label });
+  }
+
+  function setLicenseExpiry(deviceIdEncoded, dateStr){
+    if (!dateStr){ patchLicense(deviceIdEncoded, { expiresAt: null }); return; }
+    // End-of-day on the chosen date, in the admin's local time.
+    const t = new Date(dateStr + 'T23:59:59').getTime();
+    patchLicense(deviceIdEncoded, { expiresAt: t });
+    stamp('Expiry date updated');
+  }
+
+  function extendLicense(deviceIdEncoded, days){
+    const deviceId = decodeURIComponent(deviceIdEncoded);
+    const lic = licensesCache.find(l => l.deviceId === deviceId);
+    const base = (lic && lic.expiresAt && lic.expiresAt > Date.now()) ? lic.expiresAt : Date.now();
+    const t = base + days * 24 * 60 * 60 * 1000;
+    patchLicense(deviceIdEncoded, { expiresAt: t });
+    stamp(`Extended by ${days} day(s)`);
+  }
+
+  function clearLicenseExpiry(deviceIdEncoded){
+    patchLicense(deviceIdEncoded, { expiresAt: null });
+    stamp('Expiry removed — device never expires');
+  }
+
+  async function unflagLicenseEntry(deviceIdEncoded){
+    await patchLicense(deviceIdEncoded, { flagged: false });
+    await refreshLicenseFlagDot();
+    stamp('Flag dismissed');
+  }
+
+  async function resetLicenseLock(deviceIdEncoded){
+    await patchLicense(deviceIdEncoded, { resetInstance: true, active: true, flagged: false });
+    await refreshLicenseFlagDot();
+    stamp('Device lock released — next browser/PC to use this serial becomes the authorized one');
+  }
+
+  async function deleteLicenseEntry(deviceIdEncoded){
+    const deviceId = decodeURIComponent(deviceIdEncoded);
+    if (!confirm('Remove this device\'s license entry? It will re-register as inactive next time it checks in.')) return;
+    try{
+      const r = await fetch(API + '/api/admin/licenses/' + encodeURIComponent(deviceId), {
+        method: 'DELETE',
+        headers: { 'x-admin-password': licensesPassword || '' }
+      });
+      if (!r.ok) throw new Error('failed');
+      licensesCache = licensesCache.filter(l => l.deviceId !== deviceId);
+      renderLicensesTable();
+      stamp('License entry removed');
+    }catch(e){ stamp('Could not remove license', 'error'); }
+  }
+
+  async function copyDeviceId(id){
+    try{
+      await navigator.clipboard.writeText(id);
+      stamp('Device ID copied');
+    }catch(e){ /* clipboard may be unavailable; ignore silently */ }
+  }
+
+  function stamp(msg, type = 'success', undo){
+    const t = document.createElement('div');
+    t.className = 'stamp' + (type === 'error' ? ' error' : '') + (undo ? ' with-undo' : '');
+    const text = document.createElement('span');
+    text.textContent = msg;
+    t.appendChild(text);
+    let timer;
+    if (undo){
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'stamp-undo';
+      btn.textContent = 'Undo';
+      btn.onclick = () => { clearTimeout(timer); t.remove(); undo(); };
+      t.appendChild(btn);
+    }
+    document.body.appendChild(t);
+    timer = setTimeout(() => t.remove(), undo ? 5800 : 2800);
+  }
+
+  // FEATURE: Draggable Add Applicant window — click-and-drag the header
+  // (title bar) of the applicant modal to move it anywhere on screen.
+  // Works with mouse and touch. Position resets each time the modal opens.
+  (function enableDraggableModal(){
+    const modalEl = document.getElementById('modal');
+    const page = modalEl.querySelector('.page');
+    const header = modalEl.querySelector('.page-header');
+    if (!modalEl || !page || !header) return;
+
+    let offsetX = 0, offsetY = 0;
+    let startX = 0, startY = 0;
+    let dragging = false;
+
+    function pointFrom(e){ return e.touches ? e.touches[0] : e; }
+
+    function onPointerDown(e){
+      if (e.target.closest('.close-btn')) return;
+      dragging = true;
+      const p = pointFrom(e);
+      startX = p.clientX - offsetX;
+      startY = p.clientY - offsetY;
+      header.classList.add('dragging');
+      document.addEventListener('mousemove', onPointerMove);
+      document.addEventListener('mouseup', onPointerUp);
+      document.addEventListener('touchmove', onPointerMove, { passive: false });
+      document.addEventListener('touchend', onPointerUp);
+    }
+
+    function onPointerMove(e){
+      if (!dragging) return;
+      e.preventDefault();
+      const p = pointFrom(e);
+      offsetX = p.clientX - startX;
+      offsetY = p.clientY - startY;
+      page.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+    }
+
+    function onPointerUp(){
+      dragging = false;
+      header.classList.remove('dragging');
+      document.removeEventListener('mousemove', onPointerMove);
+      document.removeEventListener('mouseup', onPointerUp);
+      document.removeEventListener('touchmove', onPointerMove);
+      document.removeEventListener('touchend', onPointerUp);
+    }
+
+    header.addEventListener('mousedown', onPointerDown);
+    header.addEventListener('touchstart', onPointerDown, { passive: true });
+
+    // Re-center the window every time it's opened again, so a previous
+    // drag doesn't leave it stuck off in a corner (or off-screen) next time.
+    new MutationObserver(() => {
+      if (!modalEl.classList.contains('active')){
+        offsetX = 0; offsetY = 0;
+        page.style.transform = '';
+      }
+    }).observe(modalEl, { attributes: true, attributeFilter: ['class'] });
+  })();
+
+  // ===== Client license chip (topbar) =====
+  // Triggered by ?client=1&deviceId=... in the URL — that's what the CLIENT
+  // extension build's "Open Web Dashboard" button links to. The rest of
+  // the console (applicants, groups, everything) loads exactly the same
+  // for everyone; this only (a) hides the admin-only "💳 Licenses" button
+  // and (b) shows a small chip next to "Syncing live" with activation
+  // status + a live days/hours/minutes/seconds countdown — never the word
+  // "license". The server is only asked every 30s; the countdown itself
+  // ticks locally every second in between.
+  let clientChipExpiresAt = null;
+  let clientChipValid = false;
+
+  function clientLiveCountdownPhrase(expiresAt){
+    const msLeft = expiresAt - Date.now();
+    if (msLeft <= 0) return 'كايسالي اليوم';
+    const days = Math.floor(msLeft / (24*60*60*1000));
+    const hours = Math.floor((msLeft % (24*60*60*1000)) / (60*60*1000));
+    const minutes = Math.floor((msLeft % (60*60*1000)) / (60*1000));
+    const seconds = Math.floor((msLeft % (60*1000)) / 1000);
+    const pad = (n) => String(n).padStart(2, '0');
+    const dayLabel = days === 1 ? 'يوم' : days === 2 ? 'يومين' : `${days} يوم`;
+    return `باقي ${dayLabel} و ${pad(hours)}:${pad(minutes)}:${pad(seconds)}`;
+  }
+
+  function tickClientChip(){
+    if (!clientChipValid || !clientChipExpiresAt) return;
+    const text = document.getElementById('client-license-chip-text');
+    if (!text) return;
+    text.textContent = `مفعّل — ${clientLiveCountdownPhrase(clientChipExpiresAt)}`;
+  }
+
+  async function refreshClientLicenseChip(deviceId){
+    const icon = document.getElementById('client-license-chip-icon');
+    const text = document.getElementById('client-license-chip-text');
+    try{
+      const r = await fetch(API + '/api/license/check', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ deviceId })
+      });
+      const d = await r.json();
+      if (d.valid){
+        icon.textContent = '✅';
+        text.style.color = 'var(--portugal)';
+        clientChipValid = true;
+        clientChipExpiresAt = d.expiresAt || null;
+        text.textContent = d.expiresAt
+          ? `مفعّل — ${clientLiveCountdownPhrase(d.expiresAt)}`
+          : 'مفعّل — بدون تاريخ انتهاء';
+      } else {
+        clientChipValid = false;
+        clientChipExpiresAt = null;
+        icon.textContent = '⛔';
+        text.style.color = 'var(--seal-dark)';
+        text.textContent = d.reason === 'expired' ? 'سالات المدة' : 'غير مفعّل';
+      }
+    }catch(e){
+      clientChipValid = false;
+      clientChipExpiresAt = null;
+      icon.textContent = '⚠️';
+      text.style.color = 'var(--ink-soft)';
+      text.textContent = 'تعذر التحقق';
+    }
+  }
+
+  // ===== Activity log =====
+  // Shows which PC (deviceId) added/overwrote which applicant and when —
+  // admin-only, hidden entirely in the client dashboard view.
+  let activityLogCollapsed = false;
+
+  function toggleActivityLog(){
+    activityLogCollapsed = !activityLogCollapsed;
+    const list = document.getElementById('activity-log-list');
+    const arrow = document.getElementById('activity-log-arrow');
+    if (list) list.style.display = activityLogCollapsed ? 'none' : '';
+    if (arrow) arrow.style.transform = activityLogCollapsed ? 'rotate(-90deg)' : '';
+  }
+
+  function timeAgo(ts){
+    const diff = Date.now() - ts;
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'دابا';
+    if (mins < 60) return `منذ ${mins} د`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `منذ ${hours} سا`;
+    const days = Math.floor(hours / 24);
+    return `منذ ${days} يوم`;
+  }
+
+  // Exact date + hour:minute for an activity log entry, e.g. "29/07/2026 14:35"
+  function formatDateTime(ts){
+    if (!ts) return '—';
+    const d = new Date(ts);
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  }
+
+  async function refreshActivityLog(){
+    const list = document.getElementById('activity-log-list');
+    if (!list) return;
+    try{
+      const r = await fetch(API + '/api/activity-log?limit=50');
+      const d = await r.json();
+      const entries = d.entries || [];
+      if (!entries.length){
+        list.innerHTML = '<div style="color:var(--ink-soft);padding:8px 0;">ماكاينش تعديلات مسجلة بعد</div>';
+        return;
+      }
+      list.innerHTML = entries.map(e => {
+        const actionLabel = e.type === 'add' ? '➕ زاد' : e.type === 'update' ? '✎ بدّل/رجّع' : e.type === 'expire' ? '⏳ تمحا أوطو (20 يوم)' : e.type;
+        return `<div style="padding:6px 0;border-bottom:1px solid var(--line);display:flex;gap:10px;justify-content:space-between;align-items:center;">
+          <span>${actionLabel} <b>${escapeHtml(e.name || 'بلا اسم')}</b> <span style="color:var(--ink-soft);">(${escapeHtml(e.passportNo && !e.passportNo.startsWith('NOPASSPORT-') ? e.passportNo : 'بلا جواز')})</span></span>
+          <span title="${escapeHtml(timeAgo(e.timestamp))}" style="color:var(--ink-soft);white-space:nowrap;font-size:11.5px;">💻 ${escapeHtml(e.deviceId || '—')} · 🗓️ ${formatDateTime(e.timestamp)}</span>
+        </div>`;
+      }).join('');
+    }catch(err){
+      list.innerHTML = '<div style="color:var(--seal-dark);padding:8px 0;">تعذر تحميل سجل النشاط</div>';
+    }
+  }
+
+  function initClientChipIfNeeded(){
+    const params = new URLSearchParams(window.location.search);
+    const deviceId = params.get('deviceId');
+    if (params.get('client') !== '1' || !deviceId) return;
+    const licBtn = document.getElementById('licenses-btn');
+    if (licBtn) licBtn.style.display = 'none';
+    // FIX: the client build shouldn't see the bulk "Import JSON" button —
+    // that's an admin-only bulk-load tool, not something a client account
+    // should be doing from the dashboard.
+    const importBtn = document.getElementById('import-json-btn');
+    if (importBtn) importBtn.style.display = 'none';
+    // FIX: activity log names every device's edits — admin-only view, not
+    // something a client account should see.
+    const activityCard = document.getElementById('activity-log-card');
+    if (activityCard) activityCard.style.display = 'none';
+    // license chip removed — extension no longer checks/shows activation status
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    loadData();
+    initClientChipIfNeeded();
+    // Only the admin console needs the activity log — skip the fetch
+    // entirely in client mode (its card is hidden anyway).
+    const isClientView = new URLSearchParams(window.location.search).get('client') === '1';
+    if (!isClientView) {
+      refreshActivityLog();
+      setInterval(refreshActivityLog, 20000);
+    }
+  });
+  setInterval(() => { if (!isModalOpen) loadData(); }, 10000);
+</script>
+</body>
+</html>
