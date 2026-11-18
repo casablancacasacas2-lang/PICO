@@ -28,8 +28,6 @@
     --plum-tint:#FBE7FB;
     --teal:#0D9488;
     --teal-tint:#CCFBF1;
-    --spain:#F43F5E;
-    --spain-tint:#FFE4E9;
     --portugal:#10B981;
     --portugal-tint:#D1FAE5;
     --sky:#0EA5E9;
@@ -297,10 +295,6 @@
     font-size:11px;font-weight:600;padding:4px 10px;border:1px solid var(--teal);
     color:var(--teal);border-radius:20px;background:var(--teal-tint);white-space:nowrap;
   }
-  .tag-destination-spain{
-    font-size:11px;font-weight:600;padding:4px 10px;border:1px solid var(--spain);
-    color:var(--spain);border-radius:20px;background:var(--spain-tint);white-space:nowrap;
-  }
   .tag-destination-portugal{
     font-size:11px;font-weight:600;padding:4px 10px;border:1px solid var(--portugal);
     color:var(--portugal);border-radius:20px;background:var(--portugal-tint);white-space:nowrap;
@@ -524,7 +518,7 @@
       <div class="seal-mark"><span>AM</span></div>
       <div class="brand-text">
         <h1>Manifest</h1>
-        <small>BLS Applicant Control · Spain · Morocco · Portugal</small>
+        <small>BLS Applicant Control · Morocco · Portugal</small>
       </div>
     </div>
     <div class="topbar-right">
@@ -650,7 +644,6 @@
         </div>
         <div class="fg"><label>Destination</label>
           <select id="fdest" onkeypress="handleEnter(event,'fc')" onchange="onDestinationChange()">
-            <option value="Spain">Spain</option>
             <option value="Portugal">Portugal</option>
           </select>
         </div>
@@ -658,10 +651,6 @@
           <select id="fc" onkeypress="handleEnter(event,'fcity')" onchange="onCenterChange()">
             <option value="">Select…</option>
             <option>CASABLANCA</option>
-            <option>TETOUAN</option>
-            <option>AGADIR</option>
-            <option>TANGIER</option>
-            <option>NADOR</option>
             <option>RABAT</option>
           </select>
         </div>
@@ -713,7 +702,6 @@
         </div>
         <div class="fg" id="fg-memberstate"><label>Member state destination</label>
           <select id="fmemb" onkeypress="handleEnter(event,'frel')">
-            <option value="Spain">Spain</option>
             <option value="Portugal">Portugal</option>
           </select>
         </div>
@@ -806,7 +794,7 @@
   // clicking a family's header row reveals its members; clicking again
   // hides them.
   let expandedGroups = new Set();
-  // Destinations (Spain/Portugal) start open by default — collapsing one
+  // Destinations start open by default — collapsing one
   // hides its cities. Cities start closed — expanding one reveals its
   // families/individuals. Each node opens and closes independently.
   let collapsedDestinations = new Set();
@@ -1022,9 +1010,8 @@
   function updateCenterOptions(destination, desiredValue){
     const sel = document.getElementById('fc');
     const value = desiredValue !== undefined ? desiredValue : sel.value;
-    const spainCenters = ['CASABLANCA','TETOUAN','AGADIR','TANGIER','NADOR','RABAT'];
     const portugalCenters = ['CASABLANCA','RABAT'];
-    const opts = (destination === 'Portugal' ? portugalCenters : spainCenters).slice();
+    const opts = portugalCenters.slice();
     if (value && !opts.includes(value)) opts.push(value);
     sel.innerHTML = '<option value="">Select…</option>' + opts.map(o => `<option>${escapeHtml(o)}</option>`).join('');
     sel.value = value || '';
@@ -1048,10 +1035,10 @@
   }
 
   // FEATURE: Member state destination always mirrors the chosen Destination
-  // (Spain → Spain, Portugal → Portugal) so it never drifts out of sync.
+  // (Portugal) so it never drifts out of sync.
   function syncMemberState(destination){
     const el = document.getElementById('fmemb');
-    if (el) el.value = destination === 'Portugal' ? 'Portugal' : 'Spain';
+    if (el) el.value = 'Portugal';
   }
 
   function onDestinationChange(desiredCenterValue){
@@ -1620,7 +1607,7 @@
         <td class="mono">${a.PassportNo||''}${getExpiryBadge(a.PassportExpiryDate)}</td>
         <td>${a.DateOfBirth || '<span class="dash">—</span>'}</td>
         <td>${a.PlaceOfBirth || '<span class="dash">—</span>'}</td>
-        <td>${a.group ? `<span class="group-tag">${a.group}</span>` : '<span class="dash">—</span>'} ${a.ApplicationType === 'Family' ? '<span class="tag-family-type">Family</span>' : ''} ${a.FamilyName ? `<span class="tag-family-name">👪 ${a.FamilyName}</span>` : ''} ${a.Destination ? `<span class="${a.Destination === 'Portugal' ? 'tag-destination-portugal' : 'tag-destination-spain'}">${a.Destination}</span>` : ''} ${a.Gender ? `<span class="${a.Gender === 'Female' ? 'tag-gender-female' : 'tag-gender-male'}">${a.Gender}</span>` : ''}</td>
+        <td>${a.group ? `<span class="group-tag">${a.group}</span>` : '<span class="dash">—</span>'} ${a.ApplicationType === 'Family' ? '<span class="tag-family-type">Family</span>' : ''} ${a.FamilyName ? `<span class="tag-family-name">👪 ${a.FamilyName}</span>` : ''} ${a.Destination ? `<span class="${a.Destination === 'Portugal' ? 'tag-destination-portugal' : 'group-tag'}">${a.Destination}</span>` : ''} ${a.Gender ? `<span class="${a.Gender === 'Female' ? 'tag-gender-female' : 'tag-gender-male'}">${a.Gender}</span>` : ''}</td>
         <td class="mono" style="font-size:11px;">${formatAddedDate(a._createdAt || a._updatedAt)}${countdownHTML(a)}</td>
         <td><div class="row-actions">
           ${a.photo ? `<button class="icon-btn" onclick="downloadPhoto(${idx})">Photo</button>` : ''}
@@ -1786,7 +1773,7 @@
     }
 
     // A group chip scopes the list to one group, but we still want it broken
-    // down the same way as "All": Spain / Portugal first, then each one's
+    // down the same way as "All": Destination first, then each one's
     // Center, and within a Center the families/individuals. So both cases
     // now go through the same Destination → Center → Family tree — a group
     // is just a pre-filtered slice of that tree, not a different layout.
@@ -1878,7 +1865,7 @@
     document.getElementById('fg2').value = familyName || '';
     document.getElementById('fat').value = 'Family';
     onAppTypeChange();
-    document.getElementById('fdest').value = destination || 'Spain';
+    document.getElementById('fdest').value = destination || 'Portugal';
     ['ff','fl','fp','fd','fb','fi','fa1','fc','fcity','fpc','fph','fgen','fms','fpj','frel','fpid','fped'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('fp').readOnly = false;
     document.getElementById('fp').style.background = '';
@@ -1902,7 +1889,7 @@
     document.getElementById('fg').value = filter === 'all' ? '' : filter;
     document.getElementById('fg2').value = '';
     document.getElementById('fat').value = 'Individual';
-    document.getElementById('fdest').value = 'Spain';
+    document.getElementById('fdest').value = 'Portugal';
     onAppTypeChange();
     ['ff','fl','fp','fd','fb','fi','fa1','fc','fcity','fpc','fph','fgen','fms','fpj','frel','fpid','fped'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('fp').readOnly = false;
@@ -1931,7 +1918,7 @@
     document.getElementById('fg').value = a.group || '';
     document.getElementById('fg2').value = a.FamilyName || '';
     document.getElementById('fat').value = a.ApplicationType || 'Individual';
-    document.getElementById('fdest').value = a.Destination || 'Spain';
+    document.getElementById('fdest').value = a.Destination || 'Portugal';
     onAppTypeChange();
     onDestinationChange(a.Center || a.City || '');
     document.getElementById('ff').value = a.FirstName || '';
@@ -1950,7 +1937,7 @@
     document.getElementById('fgen').value = a.Gender || '';
     document.getElementById('fms').value = a.MaritalStatus || '';
     document.getElementById('fpj').value = a.PurposeOfJourney || '';
-    document.getElementById('fmemb').value = a.MemberStateDestination || a.Destination || 'Spain';
+    document.getElementById('fmemb').value = a.MemberStateDestination || a.Destination || 'Portugal';
     document.getElementById('frel').value = a.RelationshipWithPrimaryApplicant || '';
     document.getElementById('fph').value = '';
     resetPhotoSlot(a.photo);
@@ -2541,9 +2528,9 @@
   // where "Save as PDF" is one of the standard destinations. No extra PDF
   // library needed, and the result always matches what's on screen.
   // FIX: was one flat list in whatever order `apps` happened to be in —
-  // Portugal and Spain applicants (and different centers) ended up mixed
+  // Applicants of different destinations (and centers) ended up mixed
   // together. Now grouped the same way as the on-screen tree: Destination
-  // first (alphabetical, so Portugal / Spain / etc. are always separate
+  // first (alphabetical, so destinations are always separate
   // blocks), then Center/City within each destination — each with its own
   // section header — so every export matches what's on screen.
   function exportPDF(){
@@ -2628,7 +2615,7 @@
   }
 
   // FEATURE: Export by folder — builds a ZIP with a top-level folder per
-  // destination (Spain / Portugal / any other value / Unspecified), so the
+  // destination (Portugal / any other value / Unspecified), so the
   // Spanish and Portuguese entities are always kept apart. Inside each
   // destination folder, every family gets its own subfolder (named after
   // the family/group) containing a JSON file and photo for each member.
